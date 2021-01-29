@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=JetBrains Mono:300,300italic,400,400italic,700,700italic|Syne Mono:300,300italic,400,400italic,700,700italic|Noto Sans SC:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jimouchen.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="分类算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分类">
+<meta property="og:url" content="https://jimouchen.github.io/2020/08/23/classification/index.html">
+<meta property="og:site_name" content="Neaya&#39;s blog">
+<meta property="og:description" content="分类算法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205518598-1186189920.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205604621-1611243231.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205643851-272051049.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205732288-1226968292.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205837795-316602647.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205842132-861892572.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205953143-1711336089.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205956382-1384872502.png">
+<meta property="article:published_time" content="2020-08-23T12:13:39.000Z">
+<meta property="article:modified_time" content="2021-01-29T08:25:02.303Z">
+<meta property="article:author" content="jmchen">
+<meta property="article:tag" content="Python机器学习">
+<meta property="article:tag" content="人工智能">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205518598-1186189920.png">
+
+<link rel="canonical" href="https://jimouchen.github.io/2020/08/23/classification/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>分类 | Neaya's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/JimouChen" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Neaya's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">笔记、记录、总结</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jimouchen.github.io/2020/08/23/classification/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+      <meta itemprop="name" content="jmchen">
+      <meta itemprop="description" content="blog and notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Neaya's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          分类
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-23 20:13:39" itemprop="dateCreated datePublished" datetime="2020-08-23T20:13:39+08:00">2020-08-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-29 16:25:02" itemprop="dateModified" datetime="2021-01-29T16:25:02+08:00">2021-01-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" itemprop="url" rel="index"><span itemprop="name">机器学习</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">评论数：</span>
+    
+    <a title="valine" href="/2020/08/23/classification/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/23/classification/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <meta name="referrer" content="no-referrer">  
+
+
+<h2 id="分类算法"><a href="#分类算法" class="headerlink" title="分类算法"></a>分类算法</h2><a id="more"></a>
+
+
+
+<h4 id="逻辑回归"><a href="#逻辑回归" class="headerlink" title="逻辑回归"></a>逻辑回归</h4><ul>
+<li><p>垃圾邮件分类 </p>
+</li>
+<li><p>预测肿瘤是良性还是恶性 </p>
+</li>
+<li><p>预测某人的信用是否良好</p>
+</li>
+</ul>
+<img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205518598-1186189920.png" style="zoom:67%;">
+
+
+<ul>
+<li><p>0.5是个分界，上面是g(x)图像</p>
+</li>
+<li><p>逻辑回归的代价函数</p>
+  <img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205604621-1611243231.png" style="zoom: 67%;">
+
+
+</li>
+</ul>
+<ul>
+<li>一般使用梯度下降法求解</li>
+</ul>
+<h5 id="评估分类的结果"><a href="#评估分类的结果" class="headerlink" title="评估分类的结果"></a>评估分类的结果</h5><ul>
+<li><strong>正确率/召回率/F1指标</strong></li>
+</ul>
+<blockquote>
+<p>正确率就是检索出来的条目有多少是正确的</p>
+<p>召回率就是 所有正确的条目有多少被检索出来了</p>
+<img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205643851-272051049.png" style="zoom:50%;">
+</blockquote>
+<ul>
+<li><p>这几个指标的取值都在0-1之间，数值越接近于1，效果越好</p>
+<ul>
+<li><p>某池塘有1400条鲤鱼，300只虾，300只鳖。现在以捕鲤鱼为目的。 </p>
+<p>  撒一大网，逮着了700条鲤鱼，200只虾，100只鳖。那么，这些指标 </p>
+<p>  分别如下： </p>
+<p>  正确率 = 700 / (700 + 200 + 100) = 70% </p>
+<p>  召回率 = 700 / 1400 = 50% </p>
+<p>  F值 = 70% * 50% * 2 / (70% + 50%) = 58.3%</p>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>使用classification_report得到<strong>正确率/召回率/F1指标</strong></p>
+<ul>
+<li><p>eg</p>
+<p>  <img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205732288-1226968292.png"></p>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="使用梯度下降法解决逻辑回归"><a href="#使用梯度下降法解决逻辑回归" class="headerlink" title="使用梯度下降法解决逻辑回归"></a>使用梯度下降法解决逻辑回归</h5><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/8/6</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> classification_report</span><br><span class="line"><span class="keyword">from</span> sklearn <span class="keyword">import</span> preprocessing</span><br><span class="line"></span><br><span class="line"><span class="comment"># False的话不做数据标准化</span></span><br><span class="line">scale = <span class="literal">False</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 逻辑回归预测函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">sigmoid</span>(<span class="params">x</span>):</span></span><br><span class="line">    <span class="keyword">return</span> <span class="number">1.0</span> / (<span class="number">1</span> + np.exp(-x))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 代价函数,传入训练数据，标签，权值，三者都是矩阵形式</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">cost</span>(<span class="params">x_mat, y_mat, ws</span>):</span></span><br><span class="line">    left = np.multiply(y_mat, np.log(sigmoid(x_mat * ws)))</span><br><span class="line">    right = np.multiply(<span class="number">1</span> - y_mat, np.log(<span class="number">1</span> - sigmoid(x_mat * ws)))</span><br><span class="line">    <span class="keyword">return</span> np.<span class="built_in">sum</span>(left + right) / -(<span class="built_in">len</span>(x_mat))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 求梯度，用梯度改变权值</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">gradAscent</span>(<span class="params">xArr, yArr</span>):</span></span><br><span class="line">    <span class="keyword">if</span> scale:</span><br><span class="line">        xArr = preprocessing.scale(xArr)</span><br><span class="line">    xMat = np.mat(xArr)</span><br><span class="line">    yMat = np.mat(yArr)</span><br><span class="line"></span><br><span class="line">    lr = <span class="number">0.001</span></span><br><span class="line">    epochs = <span class="number">10000</span></span><br><span class="line">    costList = []</span><br><span class="line">    <span class="comment"># 计算数据行列数</span></span><br><span class="line">    <span class="comment"># 行代表数据个数，列代表权值个数</span></span><br><span class="line">    m, n = np.shape(xMat)</span><br><span class="line">    <span class="comment"># 初始化权值</span></span><br><span class="line">    ws = np.mat(np.ones((n, <span class="number">1</span>)))</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(epochs + <span class="number">1</span>):</span><br><span class="line">        <span class="comment"># xMat和weights矩阵相乘</span></span><br><span class="line">        h = sigmoid(xMat * ws)</span><br><span class="line">        <span class="comment"># 计算误差</span></span><br><span class="line">        ws_grad = xMat.T * (h - yMat) / m</span><br><span class="line">        ws = ws - lr * ws_grad</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> i % <span class="number">50</span> == <span class="number">0</span>:</span><br><span class="line">            costList.append(cost(xMat, yMat, ws))</span><br><span class="line">    <span class="keyword">return</span> ws, costList</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">data = np.genfromtxt(<span class="string">&#x27;LR-testSet.csv&#x27;</span>, delimiter=<span class="string">&#x27;,&#x27;</span>)</span><br><span class="line">x_data = data[:, :-<span class="number">1</span>]</span><br><span class="line">y_data = data[:, -<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切分数据,并画出散点图</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">split_plot</span>():</span></span><br><span class="line">    <span class="comment"># 切分成两种类别，0和1</span></span><br><span class="line">    <span class="comment"># x0和y0是0类别的那两列数据，x1，y1同理</span></span><br><span class="line">    x0 = []</span><br><span class="line">    y0 = []</span><br><span class="line">    x1 = []</span><br><span class="line">    y1 = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(x_data)):</span><br><span class="line">        <span class="keyword">if</span> y_data[i] == <span class="number">0</span>:</span><br><span class="line">            x0.append(x_data[i, <span class="number">0</span>])</span><br><span class="line">            y0.append(x_data[i, <span class="number">1</span>])</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            x1.append(x_data[i, <span class="number">0</span>])</span><br><span class="line">            y1.append(x_data[i, <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 画出散点图</span></span><br><span class="line">    scatter0 = plt.scatter(x0, y0, c=<span class="string">&#x27;b&#x27;</span>, marker=<span class="string">&#x27;o&#x27;</span>)</span><br><span class="line">    scatter1 = plt.scatter(x1, y1, c=<span class="string">&#x27;r&#x27;</span>, marker=<span class="string">&#x27;x&#x27;</span>)</span><br><span class="line">    <span class="comment"># 画图例</span></span><br><span class="line">    plt.legend(handles=[scatter0, scatter1], labels=[<span class="string">&#x27;label0&#x27;</span>, <span class="string">&#x27;label1&#x27;</span>], loc=<span class="string">&#x27;best&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切分数据,并画出散点图</span></span><br><span class="line">split_plot()</span><br><span class="line">plt.show()</span><br><span class="line"><span class="comment"># 把y_data变成二维</span></span><br><span class="line">y_data = y_data[:, np.newaxis]</span><br><span class="line"><span class="comment"># 给样本提价偏置项</span></span><br><span class="line">X_data = np.concatenate((np.ones((<span class="number">100</span>, <span class="number">1</span>)), x_data), axis=<span class="number">1</span>)</span><br><span class="line"><span class="comment"># 训练模型，得到权值和cost值的变化</span></span><br><span class="line">ws, costList = gradAscent(X_data, y_data)</span><br><span class="line">print(ws)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 不做数据标准化时，才画出这个图</span></span><br><span class="line"><span class="keyword">if</span> <span class="keyword">not</span> scale:</span><br><span class="line">    <span class="comment"># 画图决策边界</span></span><br><span class="line">    split_plot()</span><br><span class="line">    x_test = [[-<span class="number">4</span>], [<span class="number">3</span>]]</span><br><span class="line">    <span class="comment"># 这里ws[0],ws[1],ws[2]满足ws[0]+ws[1]*x+ws[2]*y = 0</span></span><br><span class="line">    <span class="comment"># 而这条线就是两个类别的分界线</span></span><br><span class="line">    y_test = (-ws[<span class="number">0</span>] - x_test * ws[<span class="number">1</span>]) / ws[<span class="number">2</span>]</span><br><span class="line">    plt.plot(x_test, y_test, <span class="string">&#x27;k&#x27;</span>)</span><br><span class="line">    plt.show()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 画图 loss值的变化</span></span><br><span class="line">x = np.linspace(<span class="number">0</span>, <span class="number">10000</span>, <span class="number">201</span>)</span><br><span class="line">plt.plot(x, costList, c=<span class="string">&#x27;r&#x27;</span>)</span><br><span class="line">plt.title(<span class="string">&#x27;Train&#x27;</span>)</span><br><span class="line">plt.xlabel(<span class="string">&#x27;Epochs&#x27;</span>)</span><br><span class="line">plt.ylabel(<span class="string">&#x27;Cost&#x27;</span>)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 预测</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">predict</span>(<span class="params">x_data, ws</span>):</span></span><br><span class="line">    <span class="keyword">if</span> scale == <span class="literal">True</span>:</span><br><span class="line">        x_data = preprocessing.scale(x_data)</span><br><span class="line">    xMat = np.mat(x_data)</span><br><span class="line">    ws = np.mat(ws)</span><br><span class="line">    <span class="keyword">return</span> [<span class="number">1</span> <span class="keyword">if</span> x &gt;= <span class="number">0.5</span> <span class="keyword">else</span> <span class="number">0</span> <span class="keyword">for</span> x <span class="keyword">in</span> sigmoid(xMat * ws)]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">predictions = predict(X_data, ws)</span><br><span class="line">print(classification_report(y_data, predictions))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<ul>
+<li>参考： <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Rt411q7WJ?p=26">https://www.bilibili.com/video/BV1Rt411q7WJ?p=26</a></li>
+</ul>
+<h5 id="sklearn解决逻辑回归"><a href="#sklearn解决逻辑回归" class="headerlink" title="sklearn解决逻辑回归"></a>sklearn解决逻辑回归</h5><ul>
+<li>比较方便</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/8/6</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression  <span class="comment"># 导入逻辑回归模型</span></span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> classification_report  <span class="comment"># 用来对模型的预测效果做评估</span></span><br><span class="line"></span><br><span class="line">data = np.genfromtxt(<span class="string">&#x27;LR-testSet.csv&#x27;</span>, delimiter=<span class="string">&#x27;,&#x27;</span>)</span><br><span class="line">x_data = data[:, :-<span class="number">1</span>]</span><br><span class="line">y_data = data[:, -<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 切分有效数据，可以画出散点图</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">show_scatter</span>():</span></span><br><span class="line">    x0 = []</span><br><span class="line">    x1 = []</span><br><span class="line">    y0 = []</span><br><span class="line">    y1 = []</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(x_data)):</span><br><span class="line">        <span class="keyword">if</span> y_data[i] == <span class="number">0</span>:</span><br><span class="line">            x0.append(x_data[i, <span class="number">0</span>])</span><br><span class="line">            y0.append(x_data[i, <span class="number">1</span>])</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            x1.append(x_data[i, <span class="number">0</span>])</span><br><span class="line">            y1.append(x_data[i, <span class="number">1</span>])</span><br><span class="line"></span><br><span class="line">    <span class="comment"># plt.plot(x0, y0, &#x27;b.&#x27;)</span></span><br><span class="line">    <span class="comment"># plt.plot(x1, y1, &#x27;rx&#x27;)</span></span><br><span class="line">    <span class="comment"># plt.show()</span></span><br><span class="line">    <span class="comment"># 画出散点图</span></span><br><span class="line">    scatter0 = plt.scatter(x0, y0, c=<span class="string">&#x27;b&#x27;</span>, marker=<span class="string">&#x27;o&#x27;</span>)</span><br><span class="line">    scatter1 = plt.scatter(x1, y1, c=<span class="string">&#x27;r&#x27;</span>, marker=<span class="string">&#x27;x&#x27;</span>)</span><br><span class="line">    <span class="comment"># 画图例</span></span><br><span class="line">    plt.legend(handles=[scatter0, scatter1], labels=[<span class="string">&#x27;label0&#x27;</span>, <span class="string">&#x27;label1&#x27;</span>], loc=<span class="string">&#x27;best&#x27;</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 先把散点图画出来看看</span></span><br><span class="line">show_scatter()</span><br><span class="line">plt.show()</span><br><span class="line"><span class="comment"># 建模，拟合</span></span><br><span class="line">model = LogisticRegression()</span><br><span class="line">model.fit(x_data, y_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 画出决策边界,数据无标准化</span></span><br><span class="line">show_scatter()</span><br><span class="line">x_test = np.array([[-<span class="number">4</span>], [<span class="number">3</span>]])</span><br><span class="line">y_test = (-model.intercept_ - x_test * model.coef_[<span class="number">0</span>][<span class="number">0</span>]) / model.coef_[<span class="number">0</span>][<span class="number">1</span>]</span><br><span class="line">plt.plot(x_test, y_test, <span class="string">&#x27;k&#x27;</span>)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果要把这个模型拿来预测，可以这样做</span></span><br><span class="line">prediction = model.predict(x_data)</span><br><span class="line">print(prediction)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 对预测模型进行评估</span></span><br><span class="line">print(classification_report(y_data, prediction))</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205837795-316602647.png"></p>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205842132-861892572.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span></span><br><span class="line"> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span></span><br><span class="line"> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span></span><br><span class="line"> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span> <span class="number">1.</span> <span class="number">1.</span> <span class="number">1.</span></span><br><span class="line"> <span class="number">0.</span> <span class="number">1.</span> <span class="number">0.</span> <span class="number">0.</span>]</span><br><span class="line">              precision    recall  f1-score   support</span><br><span class="line"></span><br><span class="line">         <span class="number">0.0</span>       <span class="number">0.96</span>      <span class="number">0.94</span>      <span class="number">0.95</span>        <span class="number">47</span></span><br><span class="line">         <span class="number">1.0</span>       <span class="number">0.94</span>      <span class="number">0.96</span>      <span class="number">0.95</span>        <span class="number">53</span></span><br><span class="line"></span><br><span class="line">    accuracy                           <span class="number">0.95</span>       <span class="number">100</span></span><br><span class="line">   macro avg       <span class="number">0.95</span>      <span class="number">0.95</span>      <span class="number">0.95</span>       <span class="number">100</span></span><br><span class="line">weighted avg       <span class="number">0.95</span>      <span class="number">0.95</span>      <span class="number">0.95</span>       <span class="number">100</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Process finished <span class="keyword">with</span> exit code <span class="number">0</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>由于上面的show_scatter是针对于只有两列特征的，如果是多列特征的话，还要继续切分，道理一样的</p>
+</li>
+<li><p>model.coef_里面包含了所有带x和y项的系数</p>
+</li>
+<li><p>model.intercept_是个常数</p>
+</li>
+</ul>
+<h4 id="非线性逻辑回归"><a href="#非线性逻辑回归" class="headerlink" title="非线性逻辑回归"></a>非线性逻辑回归</h4><ul>
+<li><p>数据的扁平化：</p>
+</li>
+<li><p>eg：[[1, 2], [3, 4]]————&gt;扁平化得到：[1, 2, 3, 4]</p>
+</li>
+<li><p>非线性逻辑回归可以用梯度下降法或者sklearn实现</p>
+<ul>
+<li>梯度下降法： <a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1Rt411q7WJ?p=28">https://www.bilibili.com/video/BV1Rt411q7WJ?p=28</a> </li>
+</ul>
+</li>
+<li><p>sklearn：会更加方便些</p>
+</li>
+</ul>
+<h5 id="sklearn非线性逻辑回归分类"><a href="#sklearn非线性逻辑回归分类" class="headerlink" title="sklearn非线性逻辑回归分类"></a>sklearn非线性逻辑回归分类</h5><ul>
+<li><p>有个更加方便的产生数据的方法：</p>
+<ul>
+<li><p>样本的n_samples，n_features，n_classes可以自己设</p>
+</li>
+<li><p>相应地，画图时，x_data[:, 0], x_data[0:, 1]也相应的修改</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> make_gaussian_quantiles  <span class="comment"># 用于产生数据集</span></span><br><span class="line"><span class="comment"># 生成数据集，生成的是2维正态分布，可以自己设置类别</span></span><br><span class="line"><span class="comment"># 这里设为500个样本，2个样本特征，类别是2类，也可以设为多类</span></span><br><span class="line">x_data, y_data = make_gaussian_quantiles(n_samples=<span class="number">500</span>, n_features=<span class="number">2</span>, n_classes=<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以画出来看看,分类传到颜色c</span></span><br><span class="line">plt.scatter(x_data[:, <span class="number">0</span>], x_data[<span class="number">0</span>:, <span class="number">1</span>], c=y_data)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+<li><p>在使用model = LogisticRegression()和model.fit(x_poly, y_data)建模之前，要产生非线性特征：</p>
+  <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 定义多项式回归，用degree来调节多项式特征</span></span><br><span class="line">poly_reg = PolynomialFeatures(degree=<span class="number">5</span>)</span><br><span class="line"><span class="comment"># 特征处理</span></span><br><span class="line">x_poly = poly_reg.fit_transform(x_data)</span><br></pre></td></tr></table></figure></li>
+<li><p>模型评估可以使用model.score(x_poly, y_data)，记住是传x_poly</p>
+</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/8/7</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression</span><br><span class="line"><span class="keyword">from</span> sklearn.datasets <span class="keyword">import</span> make_gaussian_quantiles  <span class="comment"># 用于产生数据集</span></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> PolynomialFeatures</span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成数据集，生成的是2维正态分布，可以自己设置类别</span></span><br><span class="line"><span class="comment"># 这里设为500个样本，2个样本特征，类别是2类，也可以设为多类</span></span><br><span class="line">x_data, y_data = make_gaussian_quantiles(n_samples=<span class="number">500</span>, n_features=<span class="number">2</span>, n_classes=<span class="number">2</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 可以画出来看看,分类传到颜色c</span></span><br><span class="line">plt.scatter(x_data[:, <span class="number">0</span>], x_data[<span class="number">0</span>:, <span class="number">1</span>], c=y_data)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;因为是非线性的，所以需要产生非线性特征&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 定义多项式回归，用degree来调节多项式特征</span></span><br><span class="line">poly_reg = PolynomialFeatures(degree=<span class="number">5</span>)</span><br><span class="line"><span class="comment"># 特征处理</span></span><br><span class="line">x_poly = poly_reg.fit_transform(x_data)</span><br><span class="line"><span class="comment"># 建模拟合</span></span><br><span class="line">model = LogisticRegression()</span><br><span class="line">model.fit(x_poly, y_data)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 评估</span></span><br><span class="line">print(<span class="string">&#x27;score: &#x27;</span>, model.score(x_poly, y_data))</span><br><span class="line"><span class="comment"># 预测测试</span></span><br><span class="line">print(<span class="string">&#x27;原来的分类结果：\n&#x27;</span>, y_data)</span><br><span class="line">print(<span class="string">&#x27;预测第5行的结果是&#x27;</span>, model.predict(x_poly)[<span class="number">5</span>])</span><br><span class="line">print(<span class="string">&#x27;所有的预测结果： \n&#x27;</span>, model.predict(x_poly))</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;上面已经建好模型了，可以直接去预测了，接下来是画图&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 获取数据值所在的范围,这里是确定图的边框范围</span></span><br><span class="line">x_min, x_max = x_data[:, <span class="number">0</span>].<span class="built_in">min</span>() - <span class="number">1</span>, x_data[:, <span class="number">0</span>].<span class="built_in">max</span>() + <span class="number">1</span></span><br><span class="line">y_min, y_max = x_data[:, <span class="number">1</span>].<span class="built_in">min</span>() - <span class="number">1</span>, x_data[:, <span class="number">1</span>].<span class="built_in">max</span>() + <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 生成网格矩阵，即很多点构成的背景图，尽量密集些</span></span><br><span class="line">xx, yy = np.meshgrid(np.arange(x_min, x_max, <span class="number">0.02</span>),</span><br><span class="line">                     np.arange(y_min, y_max, <span class="number">0.02</span>))</span><br><span class="line"></span><br><span class="line"><span class="comment"># 预测,ravel与flatten类似，多维数据转一维。flatten不会改变原始数据，ravel会改变原始数据</span></span><br><span class="line">z = model.predict(poly_reg.fit_transform(np.c_[xx.ravel(), yy.ravel()]))</span><br><span class="line">z = z.reshape(xx.shape)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 等高线图</span></span><br><span class="line">cs = plt.contourf(xx, yy, z)</span><br><span class="line"><span class="comment"># 散点图</span></span><br><span class="line">plt.scatter(x_data[:, <span class="number">0</span>], x_data[<span class="number">0</span>:, <span class="number">1</span>], c=y_data)</span><br><span class="line">plt.show()</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205953143-1711336089.png"><br><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200823205956382-1384872502.png"></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">score:  <span class="number">0.988</span></span><br><span class="line">原来的分类结果：</span><br><span class="line"> [<span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span>]</span><br><span class="line">预测第<span class="number">5</span>行的结果是 <span class="number">1</span></span><br><span class="line">所有的预测结果： </span><br><span class="line"> [<span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span></span><br><span class="line"> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span> <span class="number">1</span></span><br><span class="line"> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">1</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">1</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span> <span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">Process finished <span class="keyword">with</span> exit code <span class="number">0</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>Welcome to reward</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    欢迎打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatPay.png" alt="jmchen 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>jmchen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jimouchen.github.io/2020/08/23/classification/" title="分类">https://jimouchen.github.io/2020/08/23/classification/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"><i class="fa fa-bookmark"></i> Python机器学习</a>
+              <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" rel="tag"><i class="fa fa-bookmark"></i> 人工智能</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/23/regression/" rel="prev" title="回归">
+      <i class="fa fa-chevron-left"></i> 回归
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/23/NeuralNetworks/" rel="next" title="神经网络">
+      神经网络 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E7%B1%BB%E7%AE%97%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">分类算法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92"><span class="nav-number">1.0.1.</span> <span class="nav-text">逻辑回归</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E5%88%86%E7%B1%BB%E7%9A%84%E7%BB%93%E6%9E%9C"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">评估分类的结果</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E6%A2%AF%E5%BA%A6%E4%B8%8B%E9%99%8D%E6%B3%95%E8%A7%A3%E5%86%B3%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">使用梯度下降法解决逻辑回归</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#sklearn%E8%A7%A3%E5%86%B3%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92"><span class="nav-number">1.0.1.3.</span> <span class="nav-text">sklearn解决逻辑回归</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%9D%9E%E7%BA%BF%E6%80%A7%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92"><span class="nav-number">1.0.2.</span> <span class="nav-text">非线性逻辑回归</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#sklearn%E9%9D%9E%E7%BA%BF%E6%80%A7%E9%80%BB%E8%BE%91%E5%9B%9E%E5%BD%92%E5%88%86%E7%B1%BB"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">sklearn非线性逻辑回归分类</span></a></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jmchen"
+      src="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+  <p class="site-author-name" itemprop="name">jmchen</p>
+  <div class="site-description" itemprop="description">blog and notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JimouChen" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JimouChen" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jmc1625645320@gmail.com" title="E-Mail → mailto:jmc1625645320@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/JackNeaya" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;JackNeaya" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/jmc_ins_666/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;jmc_ins_666&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/jmchen/" title="cnblog → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank"><i class="fab fa-codiepie fa-fw"></i>cnblog</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.cnblogs.com/jmchen/" title="https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank">cnblog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.google.com/webhp?hl=zh-CN&sa=X&ved=0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" title="https:&#x2F;&#x2F;www.google.com&#x2F;webhp?hl&#x3D;zh-CN&amp;sa&#x3D;X&amp;ved&#x3D;0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" rel="noopener" target="_blank">google</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.bing.com/" title="https:&#x2F;&#x2F;www.bing.com&#x2F;" rel="noopener" target="_blank">bing</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://kaifa.baidu.com/home" title="https:&#x2F;&#x2F;kaifa.baidu.com&#x2F;home" rel="noopener" target="_blank">kaifa-baidu</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-trophy"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JimouChen</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">188k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:51</span>
+</div>
+
+<!---->
+
+
+<div>
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date();
+    function createtime() {
+        var grt= new Date("01/28/2021 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+        document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+    }
+setInterval("createtime()",250);
+</script>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '03F16su1ljoY1IjNuwBto0s9-gzGzoHsz',
+      appKey     : 'rGQW3LTCDVstajC8LY05evC5',
+      placeholder: "这里是留言的地方(支持markdown留言)~~~",
+      avatar     : 'identicon',
+      meta       : guest,
+      pageSize   : '50' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

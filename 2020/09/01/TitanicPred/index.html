@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=JetBrains Mono:300,300italic,400,400italic,700,700italic|Syne Mono:300,300italic,400,400italic,700,700italic|Noto Sans SC:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jimouchen.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="摘要：kaggle竞赛题">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kaggle——Titanic预测">
+<meta property="og:url" content="https://jimouchen.github.io/2020/09/01/TitanicPred/index.html">
+<meta property="og:site_name" content="Neaya&#39;s blog">
+<meta property="og:description" content="摘要：kaggle竞赛题">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005121355-524643337.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005244502-2057436871.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005322296-2105042406.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902011042861-424687738.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902011236260-145576359.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902012639118-848280883.png">
+<meta property="article:published_time" content="2020-09-01T12:47:05.000Z">
+<meta property="article:modified_time" content="2021-01-29T08:55:05.996Z">
+<meta property="article:author" content="jmchen">
+<meta property="article:tag" content="Python机器学习">
+<meta property="article:tag" content="人工智能">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005121355-524643337.png">
+
+<link rel="canonical" href="https://jimouchen.github.io/2020/09/01/TitanicPred/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Kaggle——Titanic预测 | Neaya's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/JimouChen" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Neaya's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">笔记、记录、总结</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jimouchen.github.io/2020/09/01/TitanicPred/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+      <meta itemprop="name" content="jmchen">
+      <meta itemprop="description" content="blog and notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Neaya's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Kaggle——Titanic预测
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-01 20:47:05" itemprop="dateCreated datePublished" datetime="2020-09-01T20:47:05+08:00">2020-09-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-29 16:55:05" itemprop="dateModified" datetime="2021-01-29T16:55:05+08:00">2021-01-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Kaggle/" itemprop="url" rel="index"><span itemprop="name">Kaggle</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">评论数：</span>
+    
+    <a title="valine" href="/2020/09/01/TitanicPred/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/09/01/TitanicPred/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>7.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <meta name="referrer" content="no-referrer">  
+
+<p>摘要：kaggle竞赛题</p>
+<a id="more"></a>
+
+<h1 id="下载数据集到本地"><a href="#下载数据集到本地" class="headerlink" title="下载数据集到本地"></a>下载数据集到本地</h1><p><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005121355-524643337.png"><br><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005244502-2057436871.png"><br><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902005322296-2105042406.png"></p>
+<h1 id="分析数据"><a href="#分析数据" class="headerlink" title="分析数据"></a>分析数据</h1><ul>
+<li>先知晓各个数据特征的含义，观察一下</li>
+<li>找到有用的，也就是可以影响到预测标签的数据</li>
+<li>没有用的数据不用管</li>
+</ul>
+<h1 id="处理数据"><a href="#处理数据" class="headerlink" title="处理数据"></a>处理数据</h1><ul>
+<li><p>这些有用的数据中，有些可能是空值</p>
+<ul>
+<li>如果该列数据较多，就取平均值</li>
+<li>如果极少，可以删了该行数据</li>
+</ul>
+</li>
+<li><p>有些有用的数据是字符串，不是数值，需要转化为数值</p>
+</li>
+</ul>
+<h1 id="把各类模型跑一遍，找到分最高的"><a href="#把各类模型跑一遍，找到分最高的" class="headerlink" title="把各类模型跑一遍，找到分最高的"></a>把各类模型跑一遍，找到分最高的</h1><ul>
+<li>使用交叉验证，对比各个分数</li>
+<li>这里只列举部分模型，还可以继续添加模型继续对比，或者调参，选出更好的<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/9/1</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"></span><br><span class="line">data = pd.read_csv(<span class="string">&#x27;train.csv&#x27;</span>)</span><br><span class="line"><span class="comment"># print(data)</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;先处理空缺的数据&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理空缺的年龄，设为平均年龄</span></span><br><span class="line">data[<span class="string">&#x27;Age&#x27;</span>] = data[<span class="string">&#x27;Age&#x27;</span>].fillna(data[<span class="string">&#x27;Age&#x27;</span>].median())</span><br><span class="line"><span class="comment"># print(data.describe())</span></span><br><span class="line"><span class="comment"># 处理性别，转化维0和1,loc是取数据的，里面传行，列</span></span><br><span class="line">data.loc[data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">1</span></span><br><span class="line">data.loc[data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;female&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">0</span></span><br><span class="line"><span class="comment"># print(data.loc[:, &#x27;Sex&#x27;])</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理Embarked，登录港口</span></span><br><span class="line"><span class="comment"># print(data[&#x27;Embarked&#x27;].unique())  # 看一下里面有几类</span></span><br><span class="line"><span class="comment"># 由于&#x27;S&#x27;比较多，就把空值用S填充</span></span><br><span class="line">data[<span class="string">&#x27;Embarked&#x27;</span>] = data[<span class="string">&#x27;Embarked&#x27;</span>].fillna(<span class="string">&#x27;S&#x27;</span>)</span><br><span class="line"><span class="comment"># 转化为数字</span></span><br><span class="line">data.loc[data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;S&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">0</span></span><br><span class="line">data.loc[data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">1</span></span><br><span class="line">data.loc[data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;Q&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;接下来选取有用的特征&#x27;&#x27;&#x27;</span></span><br><span class="line">feature = [<span class="string">&#x27;Pclass&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>, <span class="string">&#x27;Age&#x27;</span>, <span class="string">&#x27;SibSp&#x27;</span>, <span class="string">&#x27;Parch&#x27;</span>, <span class="string">&#x27;Fare&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>]</span><br><span class="line">x_data = data[feature]</span><br><span class="line">y_data = data[<span class="string">&#x27;Survived&#x27;</span>]  <span class="comment"># 预测的标签</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据标准化</span></span><br><span class="line">scaler = StandardScaler()</span><br><span class="line">x_data = scaler.fit_transform(x_data)</span><br><span class="line"><span class="comment"># print(x_data)</span></span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;处理完数据之后，现在可以使用各自算法看看效果了&#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> sklearn.model_selection <span class="keyword">import</span> cross_val_score  <span class="comment"># 导入交叉验证后的分数</span></span><br><span class="line"><span class="comment"># 逻辑回归</span></span><br><span class="line"><span class="keyword">from</span> sklearn.linear_model <span class="keyword">import</span> LogisticRegression</span><br><span class="line"></span><br><span class="line">lr = LogisticRegression()</span><br><span class="line"><span class="comment"># 计算交叉验证的误差，分三组</span></span><br><span class="line">scores = cross_val_score(lr, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())  <span class="comment"># 求平均</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 神经网络模型</span></span><br><span class="line"><span class="keyword">from</span> sklearn.neural_network <span class="keyword">import</span> MLPClassifier</span><br><span class="line"></span><br><span class="line">mlp = MLPClassifier(hidden_layer_sizes=(<span class="number">20</span>, <span class="number">10</span>), max_iter=<span class="number">2000</span>)</span><br><span class="line"><span class="comment"># 计算交叉验证的误差，分三组</span></span><br><span class="line">scores = cross_val_score(mlp, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())  <span class="comment"># 求平均</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># kNN</span></span><br><span class="line"><span class="keyword">from</span> sklearn.neighbors <span class="keyword">import</span> KNeighborsClassifier</span><br><span class="line"></span><br><span class="line">kNN = KNeighborsClassifier(n_neighbors=<span class="number">21</span>)</span><br><span class="line">scores = cross_val_score(kNN, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 决策树</span></span><br><span class="line"><span class="keyword">from</span> sklearn.tree <span class="keyword">import</span> DecisionTreeClassifier</span><br><span class="line"></span><br><span class="line"><span class="comment"># 最小分割样本数，小于4个就不往下分割了</span></span><br><span class="line">d_tree = DecisionTreeClassifier(max_depth=<span class="number">3</span>, min_samples_split=<span class="number">4</span>)</span><br><span class="line">scores = cross_val_score(d_tree, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="string">&#x27;&#x27;&#x27;下面是集成学习&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="comment"># 随机森林</span></span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line"></span><br><span class="line">rf1 = RandomForestClassifier(random_state=<span class="number">1</span>, n_estimators=<span class="number">10</span>, min_samples_split=<span class="number">2</span>)</span><br><span class="line">scores = cross_val_score(rf1, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># 100棵决策树构成</span></span><br><span class="line">rf2 = RandomForestClassifier(n_estimators=<span class="number">100</span>, min_samples_split=<span class="number">4</span>)</span><br><span class="line">scores = cross_val_score(rf2, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># Bagging</span></span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> BaggingClassifier</span><br><span class="line"></span><br><span class="line"><span class="comment"># 集成rf2，做20次有放回的抽样,由于rf2也是集成学习模型，所以运行时间有点久</span></span><br><span class="line">bg = BaggingClassifier(rf2, n_estimators=<span class="number">20</span>)</span><br><span class="line">scores = cross_val_score(bg, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># AdaBoostClassifier</span></span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> AdaBoostClassifier</span><br><span class="line"></span><br><span class="line">adb = AdaBoostClassifier(rf2, n_estimators=<span class="number">20</span>)</span><br><span class="line">scores = cross_val_score(adb, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># Stacking</span></span><br><span class="line"><span class="keyword">from</span> mlxtend.classifier <span class="keyword">import</span> StackingClassifier</span><br><span class="line"></span><br><span class="line">stacking = StackingClassifier(classifiers=[bg, mlp, lr],</span><br><span class="line">                              meta_classifier=LogisticRegression())</span><br><span class="line">scores = cross_val_score(stacking, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br><span class="line"><span class="comment"># Voting</span></span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> VotingClassifier</span><br><span class="line"></span><br><span class="line">voting = VotingClassifier([(<span class="string">&#x27;ado&#x27;</span>, adb), (<span class="string">&#x27;mlp&#x27;</span>, mlp),</span><br><span class="line">                           (<span class="string">&#x27;LR&#x27;</span>, lr), (<span class="string">&#x27;kNN&#x27;</span>, kNN),</span><br><span class="line">                           (<span class="string">&#x27;d_tree&#x27;</span>, d_tree)])</span><br><span class="line">scores = cross_val_score(voting, x_data, y_data, cv=<span class="number">3</span>)</span><br><span class="line">print(scores.mean())</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li>结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">0.7901234567901234</span><br><span class="line">0.8024691358024691</span><br><span class="line">0.8125701459034792</span><br><span class="line">0.8103254769921436</span><br><span class="line">0.8013468013468014</span><br><span class="line">0.819304152637486</span><br><span class="line">0.8204264870931538</span><br><span class="line">0.7991021324354658</span><br><span class="line">0.819304152637486</span><br><span class="line">0.8170594837261503</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure></li>
+<li>可以发现Bagging集成随机森林的效果相对不错</li>
+<li>接下来就用它来试试</li>
+</ul>
+<h1 id="使用该较好模型进行预测"><a href="#使用该较好模型进行预测" class="headerlink" title="使用该较好模型进行预测"></a>使用该较好模型进行预测</h1><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/9/2</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> sklearn.preprocessing <span class="keyword">import</span> StandardScaler</span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> BaggingClassifier</span><br><span class="line"><span class="keyword">from</span> sklearn.ensemble <span class="keyword">import</span> RandomForestClassifier</span><br><span class="line"><span class="keyword">from</span> sklearn.metrics <span class="keyword">import</span> classification_report</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 先处理空缺的数据</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_train</span>(<span class="params">train_data</span>):</span></span><br><span class="line">    <span class="comment"># 处理空缺的年龄，设为平均年龄</span></span><br><span class="line">    train_data[<span class="string">&#x27;Age&#x27;</span>] = train_data[<span class="string">&#x27;Age&#x27;</span>].fillna(train_data[<span class="string">&#x27;Age&#x27;</span>].median())</span><br><span class="line">    <span class="comment"># print(train_data.describe())</span></span><br><span class="line">    <span class="comment"># 处理性别，转化维0和1,loc是取数据的，里面传行，列</span></span><br><span class="line">    train_data.loc[train_data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">1</span></span><br><span class="line">    train_data.loc[train_data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;female&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">0</span></span><br><span class="line">    <span class="comment"># print(train_data.loc[:, &#x27;Sex&#x27;])</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 处理Embarked，登录港口</span></span><br><span class="line">    <span class="comment"># print(train_data[&#x27;Embarked&#x27;].unique())  # 看一下里面有几类</span></span><br><span class="line">    <span class="comment"># 由于&#x27;S&#x27;比较多，就把空值用S填充</span></span><br><span class="line">    train_data[<span class="string">&#x27;Embarked&#x27;</span>] = train_data[<span class="string">&#x27;Embarked&#x27;</span>].fillna(<span class="string">&#x27;S&#x27;</span>)</span><br><span class="line">    <span class="comment"># 转化为数字</span></span><br><span class="line">    train_data.loc[train_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;S&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">0</span></span><br><span class="line">    train_data.loc[train_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">1</span></span><br><span class="line">    train_data.loc[train_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;Q&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">2</span></span><br><span class="line"></span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;接下来选取有用的特征&#x27;&#x27;&#x27;</span></span><br><span class="line">    feature = [<span class="string">&#x27;Pclass&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>, <span class="string">&#x27;Age&#x27;</span>, <span class="string">&#x27;SibSp&#x27;</span>, <span class="string">&#x27;Parch&#x27;</span>, <span class="string">&#x27;Fare&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>]</span><br><span class="line">    x_data = train_data[feature]</span><br><span class="line">    y_data = train_data[<span class="string">&#x27;Survived&#x27;</span>]  <span class="comment"># 预测的标签</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    scaler = StandardScaler()</span><br><span class="line">    x_data = scaler.fit_transform(x_data)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> x_data, y_data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 处理测试集数据</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">deal_test</span>(<span class="params">test_data, label_data</span>):</span></span><br><span class="line">    <span class="comment"># 填充年龄和Fare</span></span><br><span class="line">    test_data[<span class="string">&#x27;Age&#x27;</span>] = test_data[<span class="string">&#x27;Age&#x27;</span>].fillna(test_data[<span class="string">&#x27;Age&#x27;</span>].median())</span><br><span class="line">    test_data[<span class="string">&#x27;Fare&#x27;</span>] = test_data[<span class="string">&#x27;Fare&#x27;</span>].fillna(test_data[<span class="string">&#x27;Fare&#x27;</span>].median())</span><br><span class="line">    <span class="comment"># 处理性别字符串为数值</span></span><br><span class="line">    test_data.loc[test_data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;male&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">1</span></span><br><span class="line">    test_data.loc[test_data[<span class="string">&#x27;Sex&#x27;</span>] == <span class="string">&#x27;female&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>] = <span class="number">0</span></span><br><span class="line">    <span class="comment"># 处理登岸地点为数值</span></span><br><span class="line">    test_data.loc[test_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;S&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">0</span></span><br><span class="line">    test_data.loc[test_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;C&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">1</span></span><br><span class="line">    test_data.loc[test_data[<span class="string">&#x27;Embarked&#x27;</span>] == <span class="string">&#x27;Q&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>] = <span class="number">2</span></span><br><span class="line">    <span class="comment"># 接下来选取有用的特征&#x27;&#x27;&#x27;</span></span><br><span class="line">    feature = [<span class="string">&#x27;Pclass&#x27;</span>, <span class="string">&#x27;Sex&#x27;</span>, <span class="string">&#x27;Age&#x27;</span>, <span class="string">&#x27;SibSp&#x27;</span>, <span class="string">&#x27;Parch&#x27;</span>, <span class="string">&#x27;Fare&#x27;</span>, <span class="string">&#x27;Embarked&#x27;</span>]</span><br><span class="line">    x_data = test_data[feature]</span><br><span class="line">    y_data = label_data[<span class="string">&#x27;Survived&#x27;</span>]</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 数据标准化</span></span><br><span class="line">    scaler = StandardScaler()</span><br><span class="line">    x_data = scaler.fit_transform(x_data)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> x_data, y_data</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    <span class="comment"># 读入训练集和测试集</span></span><br><span class="line">    train_data = pd.read_csv(<span class="string">&#x27;data/train.csv&#x27;</span>)</span><br><span class="line">    test_data = pd.read_csv(<span class="string">&#x27;data/test.csv&#x27;</span>)</span><br><span class="line">    real_label_data = pd.read_csv(<span class="string">&#x27;data/gender_submission.csv&#x27;</span>)</span><br><span class="line">    <span class="comment"># 队训练集和测试集进行处理</span></span><br><span class="line">    x_train, y_train = deal_train(train_data)</span><br><span class="line">    x_test, y_test = deal_test(test_data, real_label_data)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 建立模型</span></span><br><span class="line">    rf = RandomForestClassifier(n_estimators=<span class="number">10</span>, max_depth=<span class="number">3</span>, min_samples_split=<span class="number">4</span>)</span><br><span class="line">    bagging = BaggingClassifier(rf, n_estimators=<span class="number">12</span>)</span><br><span class="line">    bagging.fit(x_train, y_train)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 预测</span></span><br><span class="line">    prediction = bagging.predict(x_test)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 评估</span></span><br><span class="line">    print(bagging.score(x_test, y_test))</span><br><span class="line">    print((classification_report(prediction, y_test)))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 保存预测结果为csv</span></span><br><span class="line">    submission = pd.DataFrame(&#123;</span><br><span class="line">        <span class="string">&quot;PassengerId&quot;</span>: test_data[<span class="string">&quot;PassengerId&quot;</span>],</span><br><span class="line">        <span class="string">&quot;Survived&quot;</span>: prediction</span><br><span class="line">    &#125;)</span><br><span class="line"></span><br><span class="line">    submission.to_csv(<span class="string">&#x27;predict.csv&#x27;</span>, index=<span class="literal">False</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>结果<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">0.9282296650717703</span><br><span class="line">              precision    recall  f1-score   support</span><br><span class="line"></span><br><span class="line">           0       0.99      0.91      0.95       290</span><br><span class="line">           1       0.82      0.98      0.89       128</span><br><span class="line"></span><br><span class="line">    accuracy                           0.93       418</span><br><span class="line">   macro avg       0.91      0.94      0.92       418</span><br><span class="line">weighted avg       0.94      0.93      0.93       418</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br></pre></td></tr></table></figure></li>
+<li>在迭代测试时发现，效果最好的是score为0.98+</li>
+</ul>
+<h1 id="提交"><a href="#提交" class="headerlink" title="提交"></a>提交</h1><ul>
+<li>有满意的效果就提交看看</li>
+<li>注意提交的格式</li>
+</ul>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902011042861-424687738.png"></p>
+<ul>
+<li>直接把生成的csv预测结果文件拖过去<br><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902011236260-145576359.png"></li>
+<li>然后他就会给出分数和排名<br><img src="https://img2020.cnblogs.com/blog/2134757/202009/2134757-20200902012639118-848280883.png"></li>
+</ul>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>要想得到好的预测集上传的高分的话，可以通过不断迭代，找到接近最好的参数</li>
+<li>也可以使用更加好的算法和模型拿高分</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>Welcome to reward</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    欢迎打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatPay.png" alt="jmchen 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>jmchen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jimouchen.github.io/2020/09/01/TitanicPred/" title="Kaggle——Titanic预测">https://jimouchen.github.io/2020/09/01/TitanicPred/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Python%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"><i class="fa fa-bookmark"></i> Python机器学习</a>
+              <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" rel="tag"><i class="fa fa-bookmark"></i> 人工智能</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/28/ScrapySaveToJson/" rel="prev" title="Scarpy保存数据到json文件">
+      <i class="fa fa-chevron-left"></i> Scarpy保存数据到json文件
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/03/STL_base/" rel="next" title="STL基础部分">
+      STL基础部分 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E6%95%B0%E6%8D%AE%E9%9B%86%E5%88%B0%E6%9C%AC%E5%9C%B0"><span class="nav-number">1.</span> <span class="nav-text">下载数据集到本地</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E6%9E%90%E6%95%B0%E6%8D%AE"><span class="nav-number">2.</span> <span class="nav-text">分析数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE"><span class="nav-number">3.</span> <span class="nav-text">处理数据</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8A%8A%E5%90%84%E7%B1%BB%E6%A8%A1%E5%9E%8B%E8%B7%91%E4%B8%80%E9%81%8D%EF%BC%8C%E6%89%BE%E5%88%B0%E5%88%86%E6%9C%80%E9%AB%98%E7%9A%84"><span class="nav-number">4.</span> <span class="nav-text">把各类模型跑一遍，找到分最高的</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E8%AF%A5%E8%BE%83%E5%A5%BD%E6%A8%A1%E5%9E%8B%E8%BF%9B%E8%A1%8C%E9%A2%84%E6%B5%8B"><span class="nav-number">5.</span> <span class="nav-text">使用该较好模型进行预测</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%8F%90%E4%BA%A4"><span class="nav-number">6.</span> <span class="nav-text">提交</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jmchen"
+      src="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+  <p class="site-author-name" itemprop="name">jmchen</p>
+  <div class="site-description" itemprop="description">blog and notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JimouChen" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JimouChen" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jmc1625645320@gmail.com" title="E-Mail → mailto:jmc1625645320@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/JackNeaya" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;JackNeaya" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/jmc_ins_666/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;jmc_ins_666&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/jmchen/" title="cnblog → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank"><i class="fab fa-codiepie fa-fw"></i>cnblog</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.cnblogs.com/jmchen/" title="https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank">cnblog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.google.com/webhp?hl=zh-CN&sa=X&ved=0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" title="https:&#x2F;&#x2F;www.google.com&#x2F;webhp?hl&#x3D;zh-CN&amp;sa&#x3D;X&amp;ved&#x3D;0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" rel="noopener" target="_blank">google</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.bing.com/" title="https:&#x2F;&#x2F;www.bing.com&#x2F;" rel="noopener" target="_blank">bing</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://kaifa.baidu.com/home" title="https:&#x2F;&#x2F;kaifa.baidu.com&#x2F;home" rel="noopener" target="_blank">kaifa-baidu</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-trophy"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JimouChen</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">188k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:51</span>
+</div>
+
+<!---->
+
+
+<div>
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date();
+    function createtime() {
+        var grt= new Date("01/28/2021 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+        document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+    }
+setInterval("createtime()",250);
+</script>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '03F16su1ljoY1IjNuwBto0s9-gzGzoHsz',
+      appKey     : 'rGQW3LTCDVstajC8LY05evC5',
+      placeholder: "这里是留言的地方(支持markdown留言)~~~",
+      avatar     : 'identicon',
+      meta       : guest,
+      pageSize   : '50' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

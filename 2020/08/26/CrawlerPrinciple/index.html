@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=JetBrains Mono:300,300italic,400,400italic,700,700italic|Syne Mono:300,300italic,400,400italic,700,700italic|Noto Sans SC:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jimouchen.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="摘要：bs4+re正则表达式、url队列处理分页">
+<meta property="og:type" content="article">
+<meta property="og:title" content="爬虫的实现原理和应用">
+<meta property="og:url" content="https://jimouchen.github.io/2020/08/26/CrawlerPrinciple/index.html">
+<meta property="og:site_name" content="Neaya&#39;s blog">
+<meta property="og:description" content="摘要：bs4+re正则表达式、url队列处理分页">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826193145073-1052617377.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826225937056-99348771.png">
+<meta property="og:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826230012751-501018639.png">
+<meta property="article:published_time" content="2020-08-26T09:47:05.000Z">
+<meta property="article:modified_time" content="2021-01-29T10:24:25.312Z">
+<meta property="article:author" content="jmchen">
+<meta property="article:tag" content="人工智能">
+<meta property="article:tag" content="爬虫">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826193145073-1052617377.png">
+
+<link rel="canonical" href="https://jimouchen.github.io/2020/08/26/CrawlerPrinciple/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>爬虫的实现原理和应用 | Neaya's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+    <a target="_blank" rel="noopener" href="https://github.com/JimouChen" class="github-corner" aria-label="View source on GitHub"><svg width="80" height="80" viewBox="0 0 250 250" style="fill:#151513; color:#fff; position: absolute; top: 0; border: 0; right: 0;" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a><style>.github-corner:hover .octo-arm{animation:octocat-wave 560ms ease-in-out}@keyframes octocat-wave{0%,100%{transform:rotate(0)}20%,60%{transform:rotate(-25deg)}40%,80%{transform:rotate(10deg)}}@media (max-width:500px){.github-corner:hover .octo-arm{animation:none}.github-corner .octo-arm{animation:octocat-wave 560ms ease-in-out}}</style>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Neaya's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">笔记、记录、总结</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jimouchen.github.io/2020/08/26/CrawlerPrinciple/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+      <meta itemprop="name" content="jmchen">
+      <meta itemprop="description" content="blog and notes">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Neaya's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          爬虫的实现原理和应用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-08-26 17:47:05" itemprop="dateCreated datePublished" datetime="2020-08-26T17:47:05+08:00">2020-08-26</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-29 18:24:25" itemprop="dateModified" datetime="2021-01-29T18:24:25+08:00">2021-01-29</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Scrapy%E7%BD%91%E7%BB%9C%E7%88%AC%E8%99%AB/" itemprop="url" rel="index"><span itemprop="name">Scrapy网络爬虫</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">评论数：</span>
+    
+    <a title="valine" href="/2020/08/26/CrawlerPrinciple/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/26/CrawlerPrinciple/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>59k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>54 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <meta name="referrer" content="no-referrer">  
+
+<p>摘要：bs4+re正则表达式、url队列处理分页</p>
+<a id="more"></a>
+
+<h1 id="使用爬虫遍历网站页面的图结构"><a href="#使用爬虫遍历网站页面的图结构" class="headerlink" title="使用爬虫遍历网站页面的图结构"></a>使用爬虫遍历网站页面的图结构</h1><ol>
+<li>从一个初始网页的URL开始</li>
+<li>确定URL从未抓取过</li>
+<li>获得网页上的HTML源代码</li>
+<li>从当前页面上抽取新的URL放入队列</li>
+<li>重复步骤2-4直到满足一定的停止条件</li>
+</ol>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826193145073-1052617377.png"></p>
+<h1 id="bs4-正则表达式"><a href="#bs4-正则表达式" class="headerlink" title="bs4+正则表达式"></a>bs4+正则表达式</h1><h2 id="使用bs4加正则表达式获取豆瓣电影信息"><a href="#使用bs4加正则表达式获取豆瓣电影信息" class="headerlink" title="使用bs4加正则表达式获取豆瓣电影信息"></a>使用bs4加正则表达式获取豆瓣电影信息</h2><ul>
+<li>主要是利用url队列处理分页的思想</li>
+<li>可以选择用pandas存放获得的数据</li>
+<li>这个例子是对上面原理的应用</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string"># @Time    :  2020/8/26</span></span><br><span class="line"><span class="string"># @Author  :  Jimou Chen</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="keyword">import</span> re</span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> pandas <span class="keyword">as</span> pd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Crawler</span>:</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span>(<span class="params">self</span>):</span></span><br><span class="line">        self.user_agent = <span class="string">&#x27;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36&#x27;</span></span><br><span class="line">        self.headers = &#123;<span class="string">&quot;User-Agent&quot;</span>: self.user_agent&#125;</span><br><span class="line">        self.queue = <span class="built_in">set</span>()  <span class="comment"># 用集合做url队列可以自动去掉重复的url</span></span><br><span class="line">        self.processed = <span class="built_in">set</span>()</span><br><span class="line">        self.save_list = []</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">crawl</span>(<span class="params">self, url</span>):</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> url <span class="keyword">not</span> <span class="keyword">in</span> self.processed:</span><br><span class="line">            self.processed.add(url)  <span class="comment"># 已经访问过的url</span></span><br><span class="line"></span><br><span class="line">            resp = requests.get(url, headers=self.headers)</span><br><span class="line">            soup = BeautifulSoup(resp.content.decode(<span class="string">&#x27;UTF-8&#x27;</span>), <span class="string">&#x27;html.parser&#x27;</span>)</span><br><span class="line">            nodes = soup.find_all(<span class="string">&#x27;div&#x27;</span>, &#123;<span class="string">&#x27;class&#x27;</span>: <span class="string">&#x27;hd&#x27;</span>&#125;)</span><br><span class="line"></span><br><span class="line">            <span class="comment"># 当前页</span></span><br><span class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> nodes:</span><br><span class="line">                name = i.find_all(<span class="string">&#x27;span&#x27;</span>)[<span class="number">0</span>].text</span><br><span class="line">                link = i.find(<span class="string">&#x27;a&#x27;</span>)[<span class="string">&#x27;href&#x27;</span>]</span><br><span class="line">                msg_dict = &#123;<span class="string">&#x27;电影名&#x27;</span>: name, <span class="string">&#x27;链接&#x27;</span>: link&#125;</span><br><span class="line">                self.save_list.append(msg_dict)</span><br><span class="line"></span><br><span class="line">                print(<span class="string">&#x27;&#123;&#125;: &#123;&#125;&#x27;</span>.<span class="built_in">format</span>(i.find_all(<span class="string">&#x27;span&#x27;</span>)[<span class="number">0</span>].text, i.find(<span class="string">&#x27;a&#x27;</span>)[<span class="string">&#x27;href&#x27;</span>]))</span><br><span class="line">            print(<span class="string">&#x27;\n&#x27;</span>)</span><br><span class="line">            <span class="comment"># 其他页</span></span><br><span class="line">            other_pages = soup.find_all(<span class="string">&#x27;div&#x27;</span>, &#123;<span class="string">&#x27;class&#x27;</span>: <span class="string">&#x27;paginator&#x27;</span>&#125;)</span><br><span class="line">            <span class="comment"># 正则表达式找到页码链接</span></span><br><span class="line">            pattern = re.<span class="built_in">compile</span>(<span class="string">r&#x27;&lt;a href=&quot;(.+?)&quot;&gt;\w&#x27;</span>)</span><br><span class="line">            links = pattern.findall(<span class="built_in">str</span>(other_pages))</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> link <span class="keyword">in</span> links:</span><br><span class="line">                url = <span class="string">&#x27;https://movie.douban.com/top250&#x27;</span> + link</span><br><span class="line">                self.queue.add(url)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span>(<span class="params">self, url</span>):</span></span><br><span class="line">        self.queue.add(url)</span><br><span class="line">        <span class="comment"># 保持获取网页，直到为队列为空</span></span><br><span class="line">        <span class="keyword">while</span> self.queue:</span><br><span class="line">            self.crawl(self.queue.pop())</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 这里可以保存到指定文件</span></span><br><span class="line">        movie_msg = pd.DataFrame(self.save_list)</span><br><span class="line">        movie_msg.to_excel(<span class="string">&#x27;douban_movies.xls&#x27;</span>)</span><br><span class="line">        print(self.save_list)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&#x27;__main__&#x27;</span>:</span><br><span class="line">    Crawler().run(<span class="string">&#x27;https://movie.douban.com/top250&#x27;</span>)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>打印得到的结果如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br><span class="line">299</span><br><span class="line">300</span><br><span class="line">301</span><br></pre></td><td class="code"><pre><span class="line">肖申克的救赎: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292052&#x2F;</span><br><span class="line">霸王别姬: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291546&#x2F;</span><br><span class="line">阿甘正传: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292720&#x2F;</span><br><span class="line">这个杀手不太冷: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295644&#x2F;</span><br><span class="line">泰坦尼克号: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292722&#x2F;</span><br><span class="line">美丽人生: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292063&#x2F;</span><br><span class="line">千与千寻: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291561&#x2F;</span><br><span class="line">辛德勒的名单: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295124&#x2F;</span><br><span class="line">盗梦空间: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3541415&#x2F;</span><br><span class="line">忠犬八公的故事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011091&#x2F;</span><br><span class="line">海上钢琴师: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292001&#x2F;</span><br><span class="line">楚门的世界: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292064&#x2F;</span><br><span class="line">星际穿越: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1889243&#x2F;</span><br><span class="line">三傻大闹宝莱坞: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3793023&#x2F;</span><br><span class="line">机器人总动员: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2131459&#x2F;</span><br><span class="line">放牛班的春天: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291549&#x2F;</span><br><span class="line">大话西游之大圣娶亲: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292213&#x2F;</span><br><span class="line">熔炉: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5912992&#x2F;</span><br><span class="line">疯狂动物城: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25662329&#x2F;</span><br><span class="line">无间道: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307914&#x2F;</span><br><span class="line">龙猫: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291560&#x2F;</span><br><span class="line">教父: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291841&#x2F;</span><br><span class="line">当幸福来敲门: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1849031&#x2F;</span><br><span class="line">怦然心动: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3319755&#x2F;</span><br><span class="line">触不可及: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6786002&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">死亡诗社: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291548&#x2F;</span><br><span class="line">狮子王: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1301753&#x2F;</span><br><span class="line">大闹天宫: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418019&#x2F;</span><br><span class="line">指环王2：双塔奇兵: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291572&#x2F;</span><br><span class="line">猫鼠游戏: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305487&#x2F;</span><br><span class="line">窃听风暴: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1900841&#x2F;</span><br><span class="line">指环王1：魔戒再现: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291571&#x2F;</span><br><span class="line">钢琴家: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296736&#x2F;</span><br><span class="line">黑客帝国: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291843&#x2F;</span><br><span class="line">美丽心灵: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306029&#x2F;</span><br><span class="line">饮食男女: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291818&#x2F;</span><br><span class="line">两杆大烟枪: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293350&#x2F;</span><br><span class="line">飞越疯人院: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292224&#x2F;</span><br><span class="line">让子弹飞: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3742360&#x2F;</span><br><span class="line">本杰明·巴顿奇事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1485260&#x2F;</span><br><span class="line">看不见的客人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26580232&#x2F;</span><br><span class="line">绿皮书: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27060077&#x2F;</span><br><span class="line">西西里的美丽传说: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292402&#x2F;</span><br><span class="line">拯救大兵瑞恩: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292849&#x2F;</span><br><span class="line">小鞋子: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303021&#x2F;</span><br><span class="line">海蒂和爷爷: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25958717&#x2F;</span><br><span class="line">穿条纹睡衣的男孩: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3008247&#x2F;</span><br><span class="line">情书: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292220&#x2F;</span><br><span class="line">海豚湾: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3442220&#x2F;</span><br><span class="line">音乐之声: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294408&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">地球上的星星: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2363506&#x2F;</span><br><span class="line">疯狂的麦克斯4：狂暴之路: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3592854&#x2F;</span><br><span class="line">战争之王: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1419936&#x2F;</span><br><span class="line">步履不停: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2222996&#x2F;</span><br><span class="line">谍影重重: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304102&#x2F;</span><br><span class="line">彗星来的那一夜: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25807345&#x2F;</span><br><span class="line">猜火车: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292528&#x2F;</span><br><span class="line">朗读者: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2213597&#x2F;</span><br><span class="line">波西米亚狂想曲: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5300054&#x2F;</span><br><span class="line">浪潮: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2297265&#x2F;</span><br><span class="line">小萝莉的猴神大叔: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26393561&#x2F;</span><br><span class="line">再次出发之纽约遇见你: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6874403&#x2F;</span><br><span class="line">东京物语: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291568&#x2F;</span><br><span class="line">驴得水: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25921812&#x2F;</span><br><span class="line">聚焦: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25954475&#x2F;</span><br><span class="line">追随: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1397546&#x2F;</span><br><span class="line">千钧一发: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300117&#x2F;</span><br><span class="line">我爱你: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5908478&#x2F;</span><br><span class="line">一次别离: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5964718&#x2F;</span><br><span class="line">黑鹰坠落: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291824&#x2F;</span><br><span class="line">黑客帝国2：重装上阵: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304141&#x2F;</span><br><span class="line">网络谜踪: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27615441&#x2F;</span><br><span class="line">四个春天: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27191492&#x2F;</span><br><span class="line">发条橙: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292233&#x2F;</span><br><span class="line">E.T. 外星人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294638&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">肖申克的救赎: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292052&#x2F;</span><br><span class="line">霸王别姬: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291546&#x2F;</span><br><span class="line">阿甘正传: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292720&#x2F;</span><br><span class="line">这个杀手不太冷: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295644&#x2F;</span><br><span class="line">泰坦尼克号: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292722&#x2F;</span><br><span class="line">美丽人生: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292063&#x2F;</span><br><span class="line">千与千寻: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291561&#x2F;</span><br><span class="line">辛德勒的名单: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295124&#x2F;</span><br><span class="line">盗梦空间: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3541415&#x2F;</span><br><span class="line">忠犬八公的故事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011091&#x2F;</span><br><span class="line">海上钢琴师: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292001&#x2F;</span><br><span class="line">楚门的世界: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292064&#x2F;</span><br><span class="line">星际穿越: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1889243&#x2F;</span><br><span class="line">三傻大闹宝莱坞: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3793023&#x2F;</span><br><span class="line">机器人总动员: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2131459&#x2F;</span><br><span class="line">放牛班的春天: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291549&#x2F;</span><br><span class="line">大话西游之大圣娶亲: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292213&#x2F;</span><br><span class="line">熔炉: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5912992&#x2F;</span><br><span class="line">疯狂动物城: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25662329&#x2F;</span><br><span class="line">无间道: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307914&#x2F;</span><br><span class="line">龙猫: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291560&#x2F;</span><br><span class="line">教父: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291841&#x2F;</span><br><span class="line">当幸福来敲门: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1849031&#x2F;</span><br><span class="line">怦然心动: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3319755&#x2F;</span><br><span class="line">触不可及: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6786002&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">美国往事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292262&#x2F;</span><br><span class="line">致命魔术: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1780330&#x2F;</span><br><span class="line">低俗小说: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291832&#x2F;</span><br><span class="line">七宗罪: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292223&#x2F;</span><br><span class="line">沉默的羔羊: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293544&#x2F;</span><br><span class="line">蝴蝶效应: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292343&#x2F;</span><br><span class="line">禁闭岛: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2334904&#x2F;</span><br><span class="line">心灵捕手: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292656&#x2F;</span><br><span class="line">春光乍泄: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292679&#x2F;</span><br><span class="line">布达佩斯大饭店: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;11525673&#x2F;</span><br><span class="line">被嫌弃的松子的一生: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1787291&#x2F;</span><br><span class="line">摩登时代: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294371&#x2F;</span><br><span class="line">阿凡达: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1652587&#x2F;</span><br><span class="line">剪刀手爱德华: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292370&#x2F;</span><br><span class="line">勇敢的心: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294639&#x2F;</span><br><span class="line">喜剧之王: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302425&#x2F;</span><br><span class="line">致命ID: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297192&#x2F;</span><br><span class="line">加勒比海盗: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1298070&#x2F;</span><br><span class="line">哈利·波特与死亡圣器(下): https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011235&#x2F;</span><br><span class="line">天使爱美丽: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292215&#x2F;</span><br><span class="line">杀人回忆: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300299&#x2F;</span><br><span class="line">断背山: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418834&#x2F;</span><br><span class="line">狩猎: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6985810&#x2F;</span><br><span class="line">请以你的名字呼唤我: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26799731&#x2F;</span><br><span class="line">幽灵公主: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297359&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">7号房的礼物: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10777687&#x2F;</span><br><span class="line">阳光灿烂的日子: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291875&#x2F;</span><br><span class="line">小森林 夏秋篇: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25814705&#x2F;</span><br><span class="line">重庆森林: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291999&#x2F;</span><br><span class="line">第六感: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297630&#x2F;</span><br><span class="line">入殓师: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2149806&#x2F;</span><br><span class="line">红辣椒: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1865703&#x2F;</span><br><span class="line">小森林 冬春篇: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25814707&#x2F;</span><br><span class="line">消失的爱人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21318488&#x2F;</span><br><span class="line">爱在黎明破晓前: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296339&#x2F;</span><br><span class="line">一一: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292434&#x2F;</span><br><span class="line">唐伯虎点秋香: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306249&#x2F;</span><br><span class="line">侧耳倾听: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297052&#x2F;</span><br><span class="line">超脱: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5322596&#x2F;</span><br><span class="line">蝙蝠侠：黑暗骑士崛起: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3395373&#x2F;</span><br><span class="line">倩女幽魂: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297447&#x2F;</span><br><span class="line">玛丽和马克思: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3072124&#x2F;</span><br><span class="line">无人知晓: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292337&#x2F;</span><br><span class="line">甜蜜蜜: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305164&#x2F;</span><br><span class="line">告白: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4268598&#x2F;</span><br><span class="line">萤火之森: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5989818&#x2F;</span><br><span class="line">超能陆战队: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;11026735&#x2F;</span><br><span class="line">大鱼: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291545&#x2F;</span><br><span class="line">阳光姐妹淘: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4917726&#x2F;</span><br><span class="line">驯龙高手: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2353023&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">控方证人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296141&#x2F;</span><br><span class="line">蝙蝠侠：黑暗骑士: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1851857&#x2F;</span><br><span class="line">活着: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292365&#x2F;</span><br><span class="line">寻梦环游记: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;20495023&#x2F;</span><br><span class="line">末代皇帝: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293172&#x2F;</span><br><span class="line">乱世佳人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300267&#x2F;</span><br><span class="line">何以为家: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;30170448&#x2F;</span><br><span class="line">摔跤吧！爸爸: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26387939&#x2F;</span><br><span class="line">指环王3：王者无敌: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291552&#x2F;</span><br><span class="line">飞屋环游记: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2129039&#x2F;</span><br><span class="line">少年派的奇幻漂流: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1929463&#x2F;</span><br><span class="line">十二怒汉: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293182&#x2F;</span><br><span class="line">素媛: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21937452&#x2F;</span><br><span class="line">鬼子来了: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291858&#x2F;</span><br><span class="line">哈尔的移动城堡: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308807&#x2F;</span><br><span class="line">天空之城: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291583&#x2F;</span><br><span class="line">大话西游之月光宝盒: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1299398&#x2F;</span><br><span class="line">哈利·波特与魔法石: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295038&#x2F;</span><br><span class="line">天堂电影院: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291828&#x2F;</span><br><span class="line">罗马假日: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293839&#x2F;</span><br><span class="line">闻香识女人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1298624&#x2F;</span><br><span class="line">我不是药神: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26752088&#x2F;</span><br><span class="line">辩护人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21937445&#x2F;</span><br><span class="line">搏击俱乐部: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292000&#x2F;</span><br><span class="line">教父2: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1299131&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">罗生门: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291879&#x2F;</span><br><span class="line">终结者2：审判日: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291844&#x2F;</span><br><span class="line">初恋这件小事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4739952&#x2F;</span><br><span class="line">2001太空漫游: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292226&#x2F;</span><br><span class="line">可可西里: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308857&#x2F;</span><br><span class="line">魂断蓝桥: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293964&#x2F;</span><br><span class="line">海洋: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3443389&#x2F;</span><br><span class="line">城市之光: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293908&#x2F;</span><br><span class="line">燃情岁月: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295865&#x2F;</span><br><span class="line">牯岭街少年杀人事件: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292329&#x2F;</span><br><span class="line">色，戒: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1828115&#x2F;</span><br><span class="line">穿越时空的少女: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1937946&#x2F;</span><br><span class="line">新龙门客栈: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292287&#x2F;</span><br><span class="line">青蛇: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303394&#x2F;</span><br><span class="line">无耻混蛋: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1438652&#x2F;</span><br><span class="line">源代码: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3075287&#x2F;</span><br><span class="line">完美陌生人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26614893&#x2F;</span><br><span class="line">遗愿清单: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1867345&#x2F;</span><br><span class="line">阿飞正传: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305690&#x2F;</span><br><span class="line">哈利·波特与火焰杯: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1309055&#x2F;</span><br><span class="line">九品芝麻官: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297518&#x2F;</span><br><span class="line">大佛普拉斯: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27059130&#x2F;</span><br><span class="line">血钻: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1428175&#x2F;</span><br><span class="line">谍影重重2: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308767&#x2F;</span><br><span class="line">香水: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1760622&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">借东西的小人阿莉埃蒂: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4202302&#x2F;</span><br><span class="line">射雕英雄传之东成西就: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1316510&#x2F;</span><br><span class="line">菊次郎的夏天: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293359&#x2F;</span><br><span class="line">幸福终点站: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292274&#x2F;</span><br><span class="line">爱在日落黄昏时: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291990&#x2F;</span><br><span class="line">恐怖直播: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21360417&#x2F;</span><br><span class="line">完美的世界: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300992&#x2F;</span><br><span class="line">功夫: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291543&#x2F;</span><br><span class="line">人生果实: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26874505&#x2F;</span><br><span class="line">神偷奶爸: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3287562&#x2F;</span><br><span class="line">怪兽电力公司: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291579&#x2F;</span><br><span class="line">玩具总动员3: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1858711&#x2F;</span><br><span class="line">天书奇谭: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1428581&#x2F;</span><br><span class="line">傲慢与偏见: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418200&#x2F;</span><br><span class="line">血战钢锯岭: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26325320&#x2F;</span><br><span class="line">教父3: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294240&#x2F;</span><br><span class="line">时空恋旅人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10577869&#x2F;</span><br><span class="line">风之谷: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291585&#x2F;</span><br><span class="line">哈利·波特与阿兹卡班的囚徒: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291544&#x2F;</span><br><span class="line">釜山行: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25986180&#x2F;</span><br><span class="line">电锯惊魂: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1417598&#x2F;</span><br><span class="line">上帝之城: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292208&#x2F;</span><br><span class="line">被解救的姜戈: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6307447&#x2F;</span><br><span class="line">哪吒闹海: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307315&#x2F;</span><br><span class="line">喜宴: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303037&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">忠犬八公物语: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1959195&#x2F;</span><br><span class="line">黑天鹅: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1978709&#x2F;</span><br><span class="line">头脑特工队: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10533913&#x2F;</span><br><span class="line">新世界: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10437779&#x2F;</span><br><span class="line">未麻的部屋: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1395091&#x2F;</span><br><span class="line">你看起来好像很好吃: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4848115&#x2F;</span><br><span class="line">海街日记: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25895901&#x2F;</span><br><span class="line">无敌破坏王: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6534248&#x2F;</span><br><span class="line">雨人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291870&#x2F;</span><br><span class="line">冰川时代: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291578&#x2F;</span><br><span class="line">恋恋笔记本: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1309163&#x2F;</span><br><span class="line">惊魂记: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293181&#x2F;</span><br><span class="line">二十二: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26430107&#x2F;</span><br><span class="line">恐怖游轮: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011051&#x2F;</span><br><span class="line">海边的曼彻斯特: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25980443&#x2F;</span><br><span class="line">奇迹男孩: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26787574&#x2F;</span><br><span class="line">小偷家族: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27622447&#x2F;</span><br><span class="line">房间: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25724855&#x2F;</span><br><span class="line">绿里奇迹: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300374&#x2F;</span><br><span class="line">魔女宅急便: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307811&#x2F;</span><br><span class="line">虎口脱险: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296909&#x2F;</span><br><span class="line">雨中曲: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293460&#x2F;</span><br><span class="line">疯狂的石头: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1862151&#x2F;</span><br><span class="line">爱在午夜降临前: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10808442&#x2F;</span><br><span class="line">人工智能: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302827&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">七武士: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295399&#x2F;</span><br><span class="line">英雄本色: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297574&#x2F;</span><br><span class="line">我是山姆: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306861&#x2F;</span><br><span class="line">谍影重重3: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1578507&#x2F;</span><br><span class="line">岁月神偷: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3792799&#x2F;</span><br><span class="line">头号玩家: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4920389&#x2F;</span><br><span class="line">纵横四海: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295409&#x2F;</span><br><span class="line">疯狂原始人: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1907966&#x2F;</span><br><span class="line">一个叫欧维的男人决定去死: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26628357&#x2F;</span><br><span class="line">三块广告牌: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26611804&#x2F;</span><br><span class="line">心迷宫: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25917973&#x2F;</span><br><span class="line">哈利·波特与密室: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296996&#x2F;</span><br><span class="line">达拉斯买家俱乐部: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1793929&#x2F;</span><br><span class="line">卢旺达饭店: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291822&#x2F;</span><br><span class="line">你的名字。: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26683290&#x2F;</span><br><span class="line">花样年华: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291557&#x2F;</span><br><span class="line">萤火虫之墓: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293318&#x2F;</span><br><span class="line">记忆碎片: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304447&#x2F;</span><br><span class="line">荒蛮故事: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;24750126&#x2F;</span><br><span class="line">贫民窟的百万富翁: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2209573&#x2F;</span><br><span class="line">东邪西毒: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292328&#x2F;</span><br><span class="line">真爱至上: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292401&#x2F;</span><br><span class="line">爆裂鼓手: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25773932&#x2F;</span><br><span class="line">黑客帝国3：矩阵革命: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302467&#x2F;</span><br><span class="line">模仿游戏: https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10463953&#x2F;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[&#123;&#39;电影名&#39;: &#39;肖申克的救赎&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292052&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;霸王别姬&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291546&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阿甘正传&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292720&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;这个杀手不太冷&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295644&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;泰坦尼克号&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292722&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;美丽人生&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292063&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;千与千寻&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291561&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;辛德勒的名单&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295124&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;盗梦空间&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3541415&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;忠犬八公的故事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011091&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海上钢琴师&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292001&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;楚门的世界&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292064&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;星际穿越&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1889243&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;三傻大闹宝莱坞&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3793023&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;机器人总动员&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2131459&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;放牛班的春天&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291549&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大话西游之大圣娶亲&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292213&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;熔炉&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5912992&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;疯狂动物城&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25662329&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;无间道&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307914&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;龙猫&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291560&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;教父&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291841&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;当幸福来敲门&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1849031&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;怦然心动&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3319755&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;触不可及&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6786002&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;死亡诗社&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291548&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;狮子王&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1301753&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大闹天宫&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418019&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;指环王2：双塔奇兵&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291572&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;猫鼠游戏&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305487&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;窃听风暴&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1900841&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;指环王1：魔戒再现&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291571&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;钢琴家&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296736&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;黑客帝国&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291843&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;美丽心灵&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306029&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;饮食男女&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291818&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;两杆大烟枪&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293350&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;飞越疯人院&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292224&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;让子弹飞&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3742360&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;本杰明·巴顿奇事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1485260&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;看不见的客人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26580232&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;绿皮书&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27060077&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;西西里的美丽传说&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292402&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;拯救大兵瑞恩&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292849&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;小鞋子&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303021&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海蒂和爷爷&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25958717&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;穿条纹睡衣的男孩&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3008247&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;情书&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292220&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海豚湾&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3442220&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;音乐之声&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294408&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;地球上的星星&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2363506&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;疯狂的麦克斯4：狂暴之路&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3592854&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;战争之王&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1419936&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;步履不停&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2222996&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;谍影重重&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304102&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;彗星来的那一夜&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25807345&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;猜火车&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292528&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;朗读者&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2213597&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;波西米亚狂想曲&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5300054&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;浪潮&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2297265&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;小萝莉的猴神大叔&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26393561&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;再次出发之纽约遇见你&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6874403&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;东京物语&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291568&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;驴得水&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25921812&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;聚焦&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25954475&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;追随&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1397546&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;千钧一发&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300117&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;我爱你&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5908478&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;一次别离&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5964718&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;黑鹰坠落&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291824&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;黑客帝国2：重装上阵&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304141&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;网络谜踪&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27615441&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;四个春天&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27191492&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;发条橙&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292233&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;E.T. 外星人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294638&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;肖申克的救赎&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292052&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;霸王别姬&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291546&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阿甘正传&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292720&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;这个杀手不太冷&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295644&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;泰坦尼克号&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292722&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;美丽人生&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292063&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;千与千寻&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291561&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;辛德勒的名单&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295124&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;盗梦空间&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3541415&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;忠犬八公的故事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011091&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海上钢琴师&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292001&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;楚门的世界&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292064&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;星际穿越&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1889243&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;三傻大闹宝莱坞&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3793023&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;机器人总动员&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2131459&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;放牛班的春天&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291549&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大话西游之大圣娶亲&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292213&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;熔炉&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5912992&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;疯狂动物城&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25662329&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;无间道&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307914&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;龙猫&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291560&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;教父&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291841&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;当幸福来敲门&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1849031&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;怦然心动&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3319755&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;触不可及&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6786002&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;美国往事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292262&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;致命魔术&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1780330&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;低俗小说&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291832&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;七宗罪&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292223&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;沉默的羔羊&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293544&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;蝴蝶效应&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292343&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;禁闭岛&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2334904&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;心灵捕手&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292656&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;春光乍泄&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292679&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;布达佩斯大饭店&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;11525673&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;被嫌弃的松子的一生&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1787291&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;摩登时代&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294371&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阿凡达&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1652587&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;剪刀手爱德华&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292370&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;勇敢的心&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294639&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;喜剧之王&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302425&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;致命ID&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297192&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;加勒比海盗&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1298070&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈利·波特与死亡圣器(下)&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011235&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;天使爱美丽&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292215&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;杀人回忆&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300299&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;断背山&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418834&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;狩猎&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6985810&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;请以你的名字呼唤我&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26799731&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;幽灵公主&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297359&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;7号房的礼物&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10777687&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阳光灿烂的日子&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291875&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;小森林 夏秋篇&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25814705&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;重庆森林&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291999&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;第六感&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297630&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;入殓师&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2149806&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;红辣椒&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1865703&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;小森林 冬春篇&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25814707&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;消失的爱人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21318488&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;爱在黎明破晓前&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296339&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;一一&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292434&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;唐伯虎点秋香&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306249&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;侧耳倾听&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297052&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;超脱&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5322596&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;蝙蝠侠：黑暗骑士崛起&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3395373&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;倩女幽魂&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297447&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;玛丽和马克思&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3072124&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;无人知晓&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292337&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;甜蜜蜜&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305164&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;告白&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4268598&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;萤火之森&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;5989818&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;超能陆战队&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;11026735&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大鱼&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291545&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阳光姐妹淘&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4917726&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;驯龙高手&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2353023&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;控方证人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296141&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;蝙蝠侠：黑暗骑士&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1851857&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;活着&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292365&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;寻梦环游记&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;20495023&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;末代皇帝&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293172&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;乱世佳人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300267&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;何以为家&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;30170448&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;摔跤吧！爸爸&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26387939&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;指环王3：王者无敌&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291552&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;飞屋环游记&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2129039&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;少年派的奇幻漂流&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1929463&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;十二怒汉&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293182&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;素媛&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21937452&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;鬼子来了&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291858&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈尔的移动城堡&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308807&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;天空之城&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291583&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大话西游之月光宝盒&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1299398&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈利·波特与魔法石&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295038&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;天堂电影院&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291828&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;罗马假日&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293839&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;闻香识女人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1298624&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;我不是药神&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26752088&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;辩护人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21937445&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;搏击俱乐部&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292000&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;教父2&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1299131&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;罗生门&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291879&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;终结者2：审判日&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291844&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;初恋这件小事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4739952&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;2001太空漫游&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292226&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;可可西里&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308857&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;魂断蓝桥&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293964&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海洋&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3443389&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;城市之光&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293908&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;燃情岁月&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295865&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;牯岭街少年杀人事件&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292329&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;色，戒&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1828115&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;穿越时空的少女&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1937946&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;新龙门客栈&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292287&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;青蛇&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303394&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;无耻混蛋&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1438652&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;源代码&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3075287&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;完美陌生人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26614893&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;遗愿清单&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1867345&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;阿飞正传&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1305690&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈利·波特与火焰杯&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1309055&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;九品芝麻官&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297518&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;大佛普拉斯&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27059130&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;血钻&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1428175&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;谍影重重2&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1308767&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;香水&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1760622&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;借东西的小人阿莉埃蒂&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4202302&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;射雕英雄传之东成西就&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1316510&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;菊次郎的夏天&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293359&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;幸福终点站&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292274&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;爱在日落黄昏时&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291990&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;恐怖直播&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;21360417&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;完美的世界&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300992&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;功夫&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291543&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;人生果实&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26874505&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;神偷奶爸&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3287562&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;怪兽电力公司&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291579&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;玩具总动员3&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1858711&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;天书奇谭&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1428581&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;傲慢与偏见&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1418200&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;血战钢锯岭&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26325320&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;教父3&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1294240&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;时空恋旅人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10577869&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;风之谷&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291585&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈利·波特与阿兹卡班的囚徒&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291544&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;釜山行&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25986180&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;电锯惊魂&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1417598&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;上帝之城&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292208&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;被解救的姜戈&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6307447&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哪吒闹海&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307315&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;喜宴&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1303037&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;忠犬八公物语&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1959195&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;黑天鹅&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1978709&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;头脑特工队&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10533913&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;新世界&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10437779&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;未麻的部屋&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1395091&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;你看起来好像很好吃&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4848115&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海街日记&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25895901&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;无敌破坏王&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;6534248&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;雨人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291870&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;冰川时代&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291578&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;恋恋笔记本&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1309163&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;惊魂记&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293181&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;二十二&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26430107&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;恐怖游轮&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3011051&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;海边的曼彻斯特&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25980443&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;奇迹男孩&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26787574&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;小偷家族&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;27622447&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;房间&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25724855&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;绿里奇迹&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1300374&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;魔女宅急便&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1307811&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;虎口脱险&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296909&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;雨中曲&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293460&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;疯狂的石头&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1862151&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;爱在午夜降临前&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10808442&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;人工智能&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302827&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;七武士&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295399&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;英雄本色&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1297574&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;我是山姆&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1306861&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;谍影重重3&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1578507&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;岁月神偷&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;3792799&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;头号玩家&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;4920389&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;纵横四海&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1295409&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;疯狂原始人&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1907966&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;一个叫欧维的男人决定去死&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26628357&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;三块广告牌&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26611804&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;心迷宫&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25917973&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;哈利·波特与密室&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1296996&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;达拉斯买家俱乐部&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1793929&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;卢旺达饭店&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291822&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;你的名字。&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;26683290&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;花样年华&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1291557&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;萤火虫之墓&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1293318&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;记忆碎片&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1304447&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;荒蛮故事&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;24750126&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;贫民窟的百万富翁&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;2209573&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;东邪西毒&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292328&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;真爱至上&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1292401&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;爆裂鼓手&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;25773932&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;黑客帝国3：矩阵革命&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;1302467&#x2F;&#39;&#125;, &#123;&#39;电影名&#39;: &#39;模仿游戏&#39;, &#39;链接&#39;: &#39;https:&#x2F;&#x2F;movie.douban.com&#x2F;subject&#x2F;10463953&#x2F;&#39;&#125;]</span><br><span class="line"></span><br><span class="line">Process finished with exit code 0</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+<li><p>下面是pandas保存的结果</p>
+<ul>
+<li>pd.DataFrame传入列表，以及使用to_excel方法<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 这里可以保存到指定文件</span></span><br><span class="line">movie_msg = pd.DataFrame(self.save_list)</span><br><span class="line">movie_msg.to_excel(<span class="string">&#x27;douban_movies.xls&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826225937056-99348771.png"></li>
+</ul>
+</li>
+</ul>
+<p><img src="https://img2020.cnblogs.com/blog/2134757/202008/2134757-20200826230012751-501018639.png"></p>
+<h2 id="总结一下"><a href="#总结一下" class="headerlink" title="总结一下"></a>总结一下</h2><ul>
+<li><p>用url队列时，使用set()集合类型，可以自动去重</p>
+<ul>
+<li>但是要注意，用了set的话，得到的这些内容顺序是乱的，不是按照原本网页的顺序</li>
+<li>要顺序的话，用list()就可以了，但是要记得去重remove</li>
+</ul>
+</li>
+<li><p>效率还算可以</p>
+</li>
+<li><p>不用这个url队列也可以做，不过在分页时代码会很累赘，没那么简洁</p>
+</li>
+<li><p>在获取其他页码的链接时，有的可以直接用bs4，不用re正则表达式</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>Welcome to reward</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    欢迎打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatPay.png" alt="jmchen 微信支付">
+        <p>微信支付</p>
+      </div>
+
+  </div>
+</div>
+
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>jmchen
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://jimouchen.github.io/2020/08/26/CrawlerPrinciple/" title="爬虫的实现原理和应用">https://jimouchen.github.io/2020/08/26/CrawlerPrinciple/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BA%BA%E5%B7%A5%E6%99%BA%E8%83%BD/" rel="tag"><i class="fa fa-bookmark"></i> 人工智能</a>
+              <a href="/tags/%E7%88%AC%E8%99%AB/" rel="tag"><i class="fa fa-bookmark"></i> 爬虫</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/25/Computer408/" rel="prev" title="计算机408算法与数据结构">
+      <i class="fa fa-chevron-left"></i> 计算机408算法与数据结构
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/27/useScrapy/" rel="next" title="Scrapy的基本使用">
+      Scrapy的基本使用 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E7%88%AC%E8%99%AB%E9%81%8D%E5%8E%86%E7%BD%91%E7%AB%99%E9%A1%B5%E9%9D%A2%E7%9A%84%E5%9B%BE%E7%BB%93%E6%9E%84"><span class="nav-number">1.</span> <span class="nav-text">使用爬虫遍历网站页面的图结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#bs4-%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">bs4+正则表达式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8bs4%E5%8A%A0%E6%AD%A3%E5%88%99%E8%A1%A8%E8%BE%BE%E5%BC%8F%E8%8E%B7%E5%8F%96%E8%B1%86%E7%93%A3%E7%94%B5%E5%BD%B1%E4%BF%A1%E6%81%AF"><span class="nav-number">2.1.</span> <span class="nav-text">使用bs4加正则表达式获取豆瓣电影信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%E4%B8%80%E4%B8%8B"><span class="nav-number">2.2.</span> <span class="nav-text">总结一下</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="jmchen"
+      src="https://i.loli.net/2021/01/28/FYj8OWbtw5vkASy.png">
+  <p class="site-author-name" itemprop="name">jmchen</p>
+  <div class="site-description" itemprop="description">blog and notes</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">43</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">16</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/JimouChen" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;JimouChen" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jmc1625645320@gmail.com" title="E-Mail → mailto:jmc1625645320@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/JackNeaya" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;JackNeaya" rel="noopener" target="_blank"><i class="fab fa-twitter fa-fw"></i>Twitter</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.instagram.com/jmc_ins_666/" title="Instagram → https:&#x2F;&#x2F;www.instagram.com&#x2F;jmc_ins_666&#x2F;" rel="noopener" target="_blank"><i class="fab fa-instagram fa-fw"></i>Instagram</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://www.cnblogs.com/jmchen/" title="cnblog → https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank"><i class="fab fa-codiepie fa-fw"></i>cnblog</a>
+      </span>
+  </div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      友情链接
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.cnblogs.com/jmchen/" title="https:&#x2F;&#x2F;www.cnblogs.com&#x2F;jmchen&#x2F;" rel="noopener" target="_blank">cnblog</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.google.com/webhp?hl=zh-CN&sa=X&ved=0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" title="https:&#x2F;&#x2F;www.google.com&#x2F;webhp?hl&#x3D;zh-CN&amp;sa&#x3D;X&amp;ved&#x3D;0ahUKEwjXuJOnyr7uAhWRw4sBHUXdDbYQPAgI" rel="noopener" target="_blank">google</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://www.bing.com/" title="https:&#x2F;&#x2F;www.bing.com&#x2F;" rel="noopener" target="_blank">bing</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://kaifa.baidu.com/home" title="https:&#x2F;&#x2F;kaifa.baidu.com&#x2F;home" rel="noopener" target="_blank">kaifa-baidu</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-trophy"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JimouChen</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+    <span title="站点总字数">188k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">2:51</span>
+</div>
+
+<!---->
+
+
+<div>
+<span id="timeDate">载入天数...</span><span id="times">载入时分秒...</span>
+<script>
+    var now = new Date();
+    function createtime() {
+        var grt= new Date("01/28/2021 00:00:00");
+        now.setTime(now.getTime()+250);
+        days = (now - grt ) / 1000 / 60 / 60 / 24; dnum = Math.floor(days);
+        hours = (now - grt ) / 1000 / 60 / 60 - (24 * dnum); hnum = Math.floor(hours);
+        if(String(hnum).length ==1 ){hnum = "0" + hnum;} minutes = (now - grt ) / 1000 /60 - (24 * 60 * dnum) - (60 * hnum);
+        mnum = Math.floor(minutes); if(String(mnum).length ==1 ){mnum = "0" + mnum;}
+        seconds = (now - grt ) / 1000 - (24 * 60 * 60 * dnum) - (60 * 60 * hnum) - (60 * mnum);
+        snum = Math.round(seconds); if(String(snum).length ==1 ){snum = "0" + snum;}
+        document.getElementById("timeDate").innerHTML = "本站已安全运行 "+dnum+" 天 ";
+        document.getElementById("times").innerHTML = hnum + " 小时 " + mnum + " 分 " + snum + " 秒";
+    }
+setInterval("createtime()",250);
+</script>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '03F16su1ljoY1IjNuwBto0s9-gzGzoHsz',
+      appKey     : 'rGQW3LTCDVstajC8LY05evC5',
+      placeholder: "这里是留言的地方(支持markdown留言)~~~",
+      avatar     : 'identicon',
+      meta       : guest,
+      pageSize   : '50' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
