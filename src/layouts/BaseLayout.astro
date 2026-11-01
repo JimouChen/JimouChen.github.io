@@ -1,0 +1,82 @@
+---
+import Header from '../components/layout/Header.astro';
+import Footer from '../components/layout/Footer.astro';
+import SearchModal from '../components/common/SearchModal.astro';
+import { site } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  noindex?: boolean;
+  structuredData?: Record<string, unknown>;
+}
+
+const {
+  title,
+  description = site.description,
+  image = '/images/og-default.png',
+  type = 'website',
+  noindex = false,
+  structuredData,
+} = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.title} · 代码、创造与生活`;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url);
+const socialImage = new URL(image, Astro.site ?? site.url);
+const jsonLd = structuredData ?? {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: site.title,
+  url: site.url,
+  description: site.description,
+  inLanguage: 'zh-CN',
+  author: { '@type': 'Person', name: site.author, url: site.github },
+};
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={site.title} href="/rss.xml" />
+    <meta name="theme-color" content="#FAFAFC" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15151B" media="(prefers-color-scheme: dark)" />
+    {noindex && <meta name="robots" content="noindex,follow" />}
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={socialImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImage} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)}></script>
+    <script is:inline>
+      (() => {
+        const stored = localStorage.getItem('theme');
+        const dark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
+  </head>
+  <body>
+    <a href="#main-content" class="fixed left-4 top-3 z-[100] -translate-y-20 rounded-lg bg-ink px-4 py-2 text-sm text-canvas transition-transform focus:translate-y-0">跳到正文</a>
+    <Header />
+    <main id="main-content">
+      <slot />
+    </main>
+    <Footer />
+    <SearchModal />
+  </body>
+</html>

@@ -1,0 +1,53 @@
+---
+import { site } from '../../data/site';
+
+const heroImage = '/images/anime/neaya-hero.jpg';
+---
+
+<section class="container-site relative grid min-h-[680px] items-center gap-12 pb-16 pt-16 lg:grid-cols-[1.06fr_0.94fr] lg:gap-16 lg:pb-24 lg:pt-20">
+  <div class="page-enter relative z-10 text-center lg:text-left">
+    <div class="eyebrow">
+      <span class="size-1.5 rounded-full bg-accent shadow-[0_0_0_5px_color-mix(in_srgb,var(--accent)_12%,transparent)]"></span>
+      Developer · Creator · Dreamer
+    </div>
+    <h1 class="mt-7 text-[clamp(3.3rem,8vw,6.2rem)] font-[760] leading-[0.97] tracking-[-0.072em]">
+      Hello, I'm<br /><span class="bg-gradient-to-r from-[#8174d6] via-[#a784d8] to-[#d795b3] bg-clip-text text-transparent">Neaya.</span>
+    </h1>
+    <p class="mx-auto mt-7 max-w-[540px] text-balance text-lg leading-8 text-muted lg:mx-0">
+      用代码把想法变成现实。专注于后端架构、AI Agent 与精致的产品体验，也记录沿途那些值得分享的小事。
+    </p>
+    <div class="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
+      <a href="/blog/" class="button button-primary">
+        开始阅读
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+      </a>
+      <a href={site.github} target="_blank" rel="noreferrer" class="button button-secondary">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.4c.58.1.79-.25.79-.56v-2.23c-3.22.7-3.9-1.37-3.9-1.37-.52-1.34-1.28-1.7-1.28-1.7-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.78 2.7 1.27 3.36.97.1-.75.4-1.27.74-1.56-2.57-.29-5.27-1.29-5.27-5.68 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.82 1.19 3.08 0 4.4-2.71 5.38-5.29 5.67.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
+        GitHub
+      </a>
+    </div>
+    <div class="mt-10 flex flex-wrap justify-center items-center gap-x-5 gap-y-3 text-xs font-medium text-muted lg:justify-start">
+      <span>Python</span><span class="size-1 rounded-full bg-line"></span>
+      <span>Go</span><span class="size-1 rounded-full bg-line"></span>
+      <span>AI Agent</span><span class="size-1 rounded-full bg-line"></span>
+      <span>SwiftUI</span>
+    </div>
+  </div>
+
+  <div class="page-enter relative mx-auto w-full max-w-[480px] lg:mx-0" style="animation-delay: 100ms">
+    <div class="absolute -inset-8 rounded-[4rem] bg-gradient-to-br from-[#dcd5fa]/60 via-[#d6e8f5]/50 to-[#f7d8e3]/60 blur-2xl dark:opacity-25"></div>
+    <div class="absolute -left-4 top-12 h-20 w-28 rounded-full bg-white/50 blur-xl dark:bg-white/5"></div>
+    <div class="animate-float relative overflow-hidden rounded-[2rem] border border-white/70 bg-[#eeeaf8] shadow-[0_35px_90px_rgba(103,88,151,0.2)] dark:border-white/10">
+      <img src={heroImage} alt="坐在笔记本电脑旁、被樱花与星光环绕的 Neaya 二次元形象" width="768" height="1024" loading="eager" fetchpriority="high" class="aspect-[4/5] w-full object-cover" />
+      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#8b7db4]/10 to-transparent"></div>
+    </div>
+    <div class="glass absolute -bottom-5 -left-4 flex items-center gap-3 rounded-2xl px-4 py-3 shadow-soft sm:-left-8">
+      <span class="grid size-9 place-items-center rounded-xl bg-accent-soft text-accent">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m8 9-3 3 3 3m8-6 3 3-3 3m-2-9-4 12"/></svg>
+      </span>
+      <div><p class="text-xs font-semibold">Stay curious</p><p class="mt-0.5 text-[10px] text-muted">Build something meaningful.</p></div>
+    </div>
+    <svg class="absolute -right-5 -top-7 text-[#d9a8bd]" width="34" height="34" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 0c.5 9.5 6.5 15.5 16 16-9.5.5-15.5 6.5-16 16C15.5 22.5 9.5 16.5 0 16 9.5 15.5 15.5 9.5 16 0Z"/></svg>
+    <div class="absolute -right-7 bottom-24 size-3 rounded-full bg-sky shadow-[0_0_20px_var(--sky)]"></div>
+  </div>
+</section>

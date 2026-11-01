@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHeader from '../../components/common/PageHeader.astro';
+import PostCard from '../../components/blog/PostCard.astro';
+import Pagination from '../../components/blog/Pagination.astro';
+import { getPublishedPosts, getCategories, getTags } from '../../lib/posts';
+import { slugify } from '../../lib/utils';
+
+const posts = await getPublishedPosts();
+const categories = getCategories(posts);
+const tags = getTags(posts);
+const pageSize = 6;
+---
+
+<BaseLayout title="博客" description="Neaya 的技术博客：Python、Go、AI Agent、前端与 iOS 开发实践。">
+  <div class="container-site py-16 sm:py-20">
+    <PageHeader eyebrow="Notes & ideas" title="把经验写成值得回读的文字。" description="记录真实的技术实践、架构思考与创造过程。少一点追赶热点，多一点长期价值。" />
+
+    <div class="mt-12 flex flex-wrap items-center justify-center gap-2" aria-label="文章分类">
+      <a href="/blog/" aria-current="page" class="rounded-full bg-ink px-4 py-2 text-xs font-medium text-canvas">全部 · {posts.length}</a>
+      {categories.map((category) => <a href={`/blog/category/${slugify(category.name)}/`} class="rounded-full border border-line bg-surface px-4 py-2 text-xs font-medium text-muted transition-colors hover:border-accent hover:text-accent">{category.name} · {category.count}</a>)}
+    </div>
+
+    {posts.length > 0 ? (
+      <div class="mt-12 grid gap-6 md:grid-cols-2" data-pagefind-ignore>
+        {posts.slice(0, pageSize).map((post, index) => <PostCard post={post} featured={index === 0 && posts.length > 2} />)}
+      </div>
+      <Pagination currentPage={1} lastPage={Math.ceil(posts.length / pageSize)} />
+    ) : (
+      <div class="card mx-auto mt-12 max-w-xl p-12 text-center">
+        <div class="mx-auto grid size-12 place-items-center rounded-2xl bg-accent-soft text-accent">✦</div>
+        <h2 class="mt-5 text-lg font-semibold">第一篇文章正在酝酿</h2>
+        <p class="mt-2 text-sm leading-7 text-muted">新的 Markdown 文章发布后，会自动出现在这里。</p>
+      </div>
+    )}
+
+    {tags.length > 0 && (
+      <section class="mx-auto mt-16 max-w-3xl border-t border-line pt-10 text-center" data-pagefind-ignore>
+        <h2 class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">按标签探索</h2>
+        <div class="mt-5 flex flex-wrap justify-center gap-2">
+          {tags.map((tag) => <a href={`/blog/tag/${slugify(tag.name)}/`} class="tag transition-colors hover:border-accent hover:text-accent">#{tag.name} <span class="ml-1 opacity-60">{tag.count}</span></a>)}
+        </div>
+      </section>
+    )}
+  </div>
+</BaseLayout>

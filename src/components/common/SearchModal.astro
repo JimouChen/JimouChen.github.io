@@ -1,0 +1,37 @@
+---
+import SearchResults from './SearchResults.astro';
+---
+
+<dialog id="search-dialog" class="search-dialog m-auto w-[calc(100%-1.5rem)] max-w-2xl rounded-[1.5rem] border border-line bg-canvas p-4 text-ink shadow-lift backdrop:bg-[#111117]/40 backdrop:backdrop-blur-sm sm:p-6" aria-labelledby="search-dialog-title">
+  <div class="mb-4 flex items-center justify-between">
+    <div><p class="eyebrow">Search Neaya</p><h2 id="search-dialog-title" class="sr-only">全站文章搜索</h2></div>
+    <button type="button" data-search-close class="rounded-full border border-line px-3 py-1.5 text-xs text-muted hover:text-ink" aria-label="关闭搜索">Esc</button>
+  </div>
+  <SearchResults inputId="global-search" compact />
+</dialog>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#search-dialog');
+  const openSearch = () => {
+    if (!dialog || dialog.open) return;
+    dialog.showModal();
+    requestAnimationFrame(() => dialog.querySelector<HTMLInputElement>('input')?.focus());
+  };
+
+  document.addEventListener('keydown', (event) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      dialog?.open ? dialog.close() : openSearch();
+    }
+  });
+  dialog?.querySelector('[data-search-close]')?.addEventListener('click', () => dialog.close());
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  document.querySelectorAll('[data-search-open]').forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      openSearch();
+    });
+  });
+</script>

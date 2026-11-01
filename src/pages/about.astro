@@ -1,0 +1,55 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../data/site';
+
+const stacks = [
+  { title: '后端与架构', items: ['Python', 'Go', 'Redis', 'Microservices'] },
+  { title: 'AI 与自动化', items: ['AI Agent', 'LangGraph', 'Crawler', 'Workflow'] },
+  { title: '产品与前端', items: ['Astro', 'TypeScript', 'SwiftUI', 'Vue'] },
+];
+---
+
+<BaseLayout title="关于我" description="关于 Neaya：技术方向、开发兴趣、开源项目与联系方式。">
+  <div class="container-site py-16 sm:py-20">
+    <section class="page-enter grid items-center gap-10 lg:grid-cols-[1fr_0.65fr]">
+      <div>
+        <span class="eyebrow">About Neaya</span>
+        <h1 class="mt-5 text-[clamp(3rem,7vw,5.5rem)] font-[740] leading-[1.02] tracking-[-0.065em]">写代码，<br />也写代码背后的故事。</h1>
+        <p class="mt-7 max-w-2xl text-base leading-8 text-muted">你好，我是 Neaya，也可以叫我 JimouChen。我关注后端架构、AI Agent 与独立开发，喜欢用 Python 和 Go 构建可靠的工具，也会用前端与 SwiftUI 把体验打磨完整。</p>
+        <p class="mt-4 max-w-2xl text-base leading-8 text-muted">工作之外，我喜欢二次元与番剧带来的想象力。这个博客把理性的工程实践和柔和的日系视觉放在一起，是我为自己搭建的一处长期空间。</p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href={site.github} target="_blank" rel="noreferrer" class="button button-primary">GitHub ↗</a>
+          <a href={`mailto:${site.email}`} class="button button-secondary">发送邮件</a>
+        </div>
+      </div>
+      <aside class="card relative overflow-hidden p-8 sm:p-10">
+        <div class="absolute -right-12 -top-12 size-40 rounded-full bg-accent-soft blur-2xl"></div>
+        <svg class="relative text-accent" width="32" height="32" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 0c.5 9.5 6.5 15.5 16 16-9.5.5-15.5 6.5-16 16C15.5 22.5 9.5 16.5 0 16 9.5 15.5 15.5 9.5 16 0Z"/></svg>
+        <blockquote class="relative mt-8 text-2xl font-semibold leading-relaxed tracking-[-0.035em]">Stay curious.<br />Build with care.<br />Keep growing.</blockquote>
+        <p class="relative mt-6 text-sm leading-7 text-muted">保持好奇，认真构建，持续成长。</p>
+      </aside>
+    </section>
+
+    <section class="mt-20 border-t border-line pt-14" aria-labelledby="stack-title">
+      <span class="eyebrow">Toolbox</span>
+      <h2 id="stack-title" class="section-title">我的技术工具箱</h2>
+      <div class="mt-9 grid gap-5 md:grid-cols-3">
+        {stacks.map((stack) => (
+          <article class="card p-7">
+            <h3 class="text-base font-semibold">{stack.title}</h3>
+            <div class="mt-5 flex flex-wrap gap-2">{stack.items.map((item) => <span class="tag">{item}</span>)}</div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="mt-20 grid gap-5 md:grid-cols-2">
+      <a href="/projects/" class="card card-hover p-8">
+        <span class="eyebrow">Open source</span><h2 class="mt-4 text-2xl font-semibold tracking-[-0.04em]">看看我构建的作品 →</h2><p class="mt-3 text-sm leading-7 text-muted">后端系统、自动化工具，以及一些让日常更高效的小实验。</p>
+      </a>
+      <a href="/timeline/" class="card card-hover p-8">
+        <span class="eyebrow">Journey</span><h2 class="mt-4 text-2xl font-semibold tracking-[-0.04em]">沿着时间轴继续了解 →</h2><p class="mt-3 text-sm leading-7 text-muted">当前关注的方向，以及正在持续投入的学习与创作。</p>
+      </a>
+    </section>
+  </div>
+</BaseLayout>

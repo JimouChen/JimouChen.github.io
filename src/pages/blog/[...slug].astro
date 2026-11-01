@@ -1,0 +1,105 @@
+---
+import { render } from 'astro:content';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Toc from '../../components/blog/Toc.astro';
+import PostCard from '../../components/blog/PostCard.astro';
+import { getPublishedPosts, getPostUrl, getReadingMinutes, getAdjacentPosts, getRelatedPosts, type Post } from '../../lib/posts';
+import { formatDate, slugify } from '../../lib/utils';
+import { site } from '../../data/site';
+
+interface Props { post: Post; }
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  const posts = await getPublishedPosts();
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+};
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const posts = await getPublishedPosts();
+const { newer, older } = getAdjacentPosts(posts, post);
+const related = getRelatedPosts(posts, post);
+const readingMinutes = getReadingMinutes(post);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: post.data.title,
+  description: post.data.description,
+  image: post.data.cover ? [post.data.cover] : undefined,
+  datePublished: post.data.pubDate.toISOString(),
+  dateModified: (post.data.updatedDate ?? post.data.pubDate).toISOString(),
+  mainEntityOfPage: new URL(getPostUrl(post), site.url).toString(),
+  author: { '@type': 'Person', name: site.author, url: site.github },
+  keywords: post.data.tags.join(', '),
+  inLanguage: 'zh-CN',
+};
+---
+
+<BaseLayout title={post.data.title} description={post.data.description} image={post.data.cover} type="article" structuredData={structuredData}>
+  <article class="page-enter pb-8 pt-12 sm:pt-16" data-pagefind-body>
+    <header class="container-site">
+      <div class="mx-auto max-w-4xl text-center">
+        <a href={`/blog/category/${slugify(post.data.category)}/`} class="eyebrow justify-center">{post.data.category}</a>
+        <h1 class="mt-5 text-balance text-[clamp(2.25rem,6vw,4.4rem)] font-[740] leading-[1.1] tracking-[-0.055em]">{post.data.title}</h1>
+        <p class="mx-auto mt-5 max-w-2xl text-base leading-8 text-muted">{post.data.description}</p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs text-muted">
+          <span>{site.author}</span><span class="size-0.5 rounded-full bg-muted"></span>
+          <time datetime={post.data.pubDate.toISOString()}>发布于 {formatDate(post.data.pubDate)}</time>
+          <span class="size-0.5 rounded-full bg-muted"></span><span>{readingMinutes} 分钟阅读</span>
+          {post.data.updatedDate && <><span class="size-0.5 rounded-full bg-muted"></span><time datetime={post.data.updatedDate.toISOString()}>更新于 {formatDate(post.data.updatedDate)}</time></>}
+        </div>
+        <div class="mt-6 flex flex-wrap justify-center gap-2">
+          {post.data.tags.map((tag) => <a href={`/blog/tag/${slugify(tag)}/`} class="tag hover:text-accent">#{tag}</a>)}
+        </div>
+      </div>
+      {post.data.cover && (
+        <div class="mx-auto mt-10 max-w-5xl overflow-hidden rounded-[1.5rem] border border-line bg-surface-soft shadow-soft sm:rounded-[2rem]" data-pagefind-ignore>
+          <img src={post.data.cover} alt={`${post.data.title} 封面插画`} width="1200" height="675" loading="eager" class="aspect-[16/8] w-full object-cover" />
+        </div>
+      )}
+    </header>
+
+    <div class="container-site mt-12 grid gap-12 xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
+      <div class="min-w-0">
+        <Toc headings={headings} mobile />
+        <div class="prose-neaya">
+          <Content />
+        </div>
+
+        <footer class="mt-14">
+          <div class="rounded-2xl border border-line bg-surface-soft p-6 text-sm leading-7 text-muted">
+            <p class="font-semibold text-ink">关于本文</p>
+            <p class="mt-2">作者：{site.author} · 采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh-hans" target="_blank" rel="license noreferrer" class="text-accent hover:underline">CC BY-NC-SA 4.0</a> 许可。转载请注明出处与原文链接，商业使用请先联系作者。</p>
+          </div>
+          <nav class="mt-8 grid gap-4 sm:grid-cols-2" aria-label="上一篇和下一篇">
+            {older ? <a href={getPostUrl(older)} class="card card-hover p-5"><span class="text-xs text-muted">← 上一篇</span><p class="mt-2 line-clamp-2 text-sm font-semibold leading-6">{older.data.title}</p></a> : <span></span>}
+            {newer && <a href={getPostUrl(newer)} class="card card-hover p-5 text-right sm:col-start-2"><span class="text-xs text-muted">下一篇 →</span><p class="mt-2 line-clamp-2 text-sm font-semibold leading-6">{newer.data.title}</p></a>}
+          </nav>
+          <a href="/blog/" class="mt-8 inline-flex items-center gap-2 text-sm font-medium text-muted hover:text-accent">← 返回博客列表</a>
+        </footer>
+      </div>
+      <aside data-pagefind-ignore><Toc headings={headings} /></aside>
+    </div>
+  </article>
+
+  {related.length > 0 && (
+    <section class="container-site mt-16 border-t border-line pt-14" data-pagefind-ignore>
+      <div class="flex items-end justify-between"><div><span class="eyebrow">Keep reading</span><h2 class="mt-3 text-2xl font-bold tracking-[-0.04em]">相关文章</h2></div><a href="/blog/" class="text-sm text-muted hover:text-accent">查看全部 →</a></div>
+      <div class="mt-7 grid gap-6 md:grid-cols-3">{related.map((item) => <PostCard post={item} />)}</div>
+    </section>
+  )}
+</BaseLayout>
+
+<script>
+  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
+  if ('IntersectionObserver' in window && tocLinks.length > 0) {
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries.find((entry) => entry.isIntersecting);
+      if (!visible) return;
+      tocLinks.forEach((link) => link.removeAttribute('aria-current'));
+      document.querySelector(`[data-toc-link="${visible.target.id}"]`)?.setAttribute('aria-current', 'location');
+    }, { rootMargin: '-15% 0px -70% 0px' });
+    document.querySelectorAll('.prose-neaya h2[id], .prose-neaya h3[id]').forEach((heading) => observer.observe(heading));
+  }
+</script>

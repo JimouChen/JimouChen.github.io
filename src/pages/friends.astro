@@ -1,0 +1,26 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/common/PageHeader.astro';
+import { friends } from '../data/friends';
+---
+
+<BaseLayout title="友链" description="Neaya 推荐的优秀开发者与技术博客。">
+  <div class="container-site py-16 sm:py-20">
+    <PageHeader eyebrow="Good company" title="在互联网上彼此照亮。" description="一些长期输出、值得订阅的开发者与技术网站。好的内容，会让好奇心继续生长。" />
+    <div class="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-3">
+      {friends.map((friend) => (
+        <a href={friend.url} target="_blank" rel="noreferrer" class="card card-hover group p-7 text-center">
+          <span aria-hidden="true" class="mx-auto grid size-20 place-items-center rounded-[1.4rem] border border-line font-mono text-xl font-semibold shadow-soft" style={`background: color-mix(in srgb, ${friend.accent} 12%, var(--card)); color: ${friend.accent};`}>{friend.monogram}</span>
+          <h2 class="mt-5 text-lg font-semibold tracking-[-0.025em] group-hover:text-accent">{friend.name}</h2>
+          <p class="mt-3 text-sm leading-7 text-muted">{friend.description}</p>
+          <span class="mt-5 inline-block text-xs font-medium text-accent">访问网站 ↗</span>
+        </a>
+      ))}
+    </div>
+    <div class="card mx-auto mt-12 max-w-3xl p-7 text-center">
+      <h2 class="text-base font-semibold">交换友链</h2>
+      <p class="mt-2 text-sm leading-7 text-muted">如果你也在认真写作或构建作品，欢迎通过邮箱介绍你的网站。</p>
+      <a href="mailto:1625645320@qq.com?subject=Neaya%20Blog%20%E5%8F%8B%E9%93%BE%E7%94%B3%E8%AF%B7" class="mt-5 inline-flex text-sm font-medium text-accent hover:underline">联系我 →</a>
+    </div>
+  </div>
+</BaseLayout>

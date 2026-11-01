@@ -1,0 +1,25 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings: MarkdownHeading[];
+  mobile?: boolean;
+}
+
+const { headings, mobile = false } = Astro.props;
+const items = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+{items.length > 0 && (mobile ? (
+  <details class="card mb-8 p-5 xl:hidden">
+    <summary class="cursor-pointer text-sm font-semibold">本文目录</summary>
+    <nav class="mt-4 border-l border-line pl-4" aria-label="移动端文章目录">
+      {items.map((heading) => <a href={`#${heading.slug}`} class:list={['block py-1.5 text-sm leading-6 text-muted transition-colors hover:text-accent', heading.depth === 3 && 'pl-4 text-xs']}>{heading.text}</a>)}
+    </nav>
+  </details>
+) : (
+  <nav class="toc sticky top-28 hidden max-h-[calc(100vh-8rem)] overflow-y-auto border-l border-line pl-5 xl:block" aria-label="文章目录">
+    <p class="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-ink">On this page</p>
+    {items.map((heading) => <a href={`#${heading.slug}`} data-toc-link={heading.slug} class:list={['block py-1.5 text-[13px] leading-6 text-muted transition-colors hover:text-accent', heading.depth === 3 && 'pl-4 text-xs']}>{heading.text}</a>)}
+  </nav>
+))}

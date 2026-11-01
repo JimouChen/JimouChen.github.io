@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/common/PageHeader.astro';
+import SearchResults from '../components/common/SearchResults.astro';
+---
+
+<BaseLayout title="搜索" description="搜索 Neaya 博客的标题、正文、标签与分类。">
+  <div class="container-site py-16 sm:py-20">
+    <PageHeader eyebrow="Find something" title="从一个关键词开始。" description="全文检索所有已发布文章。也可以随时使用 Cmd / Ctrl + K 唤起快捷搜索。" />
+    <div class="page-enter mx-auto mt-12 max-w-3xl">
+      <SearchResults inputId="page-search" />
+    </div>
+  </div>
+</BaseLayout>

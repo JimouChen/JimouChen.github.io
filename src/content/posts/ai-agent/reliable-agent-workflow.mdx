@@ -1,0 +1,55 @@
+---
+title: "从单次调用到可靠工作流：AI Agent 工程实践"
+description: "从状态、工具边界、失败恢复与可观测性四个角度，拆解一个可维护的 Agent 工作流。"
+pubDate: 2026-11-01
+updatedDate: 2026-11-02
+category: "AI Agent"
+tags: ["LangGraph", "Python", "Agent"]
+cover: "/images/posts/ai-agent.jpg"
+draft: false
+---
+
+一个能演示的 Agent 和一个能长期运行的 Agent，之间隔着大量朴素的工程工作。模型能力当然重要，但稳定性更多来自清晰的边界与可恢复的设计。
+
+## 先定义状态，而不是提示词
+
+工作流的状态应该显式表达当前输入、已经完成的事实、下一步动作和最终产物。不要把所有信息都塞进一段不断增长的对话文本。
+
+```python
+from typing import TypedDict, Literal
+
+class AgentState(TypedDict):
+    task: str
+    context: list[str]
+    next_action: Literal["research", "write", "review", "done"]
+    output: str | None
+```
+
+这样做的好处是，每个节点只需要读取自己关心的字段，也更容易针对单次转移编写测试。
+
+## 工具调用必须有明确契约
+
+工具描述不是越丰富越好，而是要让输入和输出可预测。外部请求应设置超时，返回结构化错误，并尽量保证幂等。
+
+```python
+async def search(query: str) -> list[dict[str, str]]:
+    """检索公开资料，返回标题、链接与摘要。"""
+    if not query.strip():
+        return []
+    # 实际实现中还应加入超时、限流和重试。
+    return await client.search(query=query, limit=5)
+```
+
+### 把失败当作正常路径
+
+网络超时、空结果和格式错误都不是异常情况中的少数派。为节点设计降级路径，比盲目增加重试次数更有效。
+
+## 让每一步都可以观察
+
+至少记录节点名称、耗时、输入摘要和结果状态。涉及模型调用时，再补充 token 用量与模型版本。日志中应避免写入用户隐私和密钥。
+
+> 好的可观测性不是收集最多数据，而是出问题时能回答“哪一步、为什么、影响谁”。
+
+## 从可验证的小闭环开始
+
+先选择一个输入稳定、结果容易评估的任务，打通“执行—评估—恢复”闭环，再扩展工具数量。Agent 的复杂度应该由可衡量的收益驱动，而不是由框架能力驱动。

@@ -1,0 +1,18 @@
+---
+interface Props {
+  currentPage: number;
+  lastPage: number;
+}
+
+const { currentPage, lastPage } = Astro.props;
+const previous = currentPage === 2 ? '/blog/' : `/blog/page/${currentPage - 1}/`;
+const next = `/blog/page/${currentPage + 1}/`;
+---
+
+{lastPage > 1 && (
+  <nav class="mt-12 flex items-center justify-center gap-4" aria-label="文章分页">
+    {currentPage > 1 ? <a href={previous} class="button button-secondary">← 上一页</a> : <span class="button border border-line text-muted opacity-40">← 上一页</span>}
+    <span class="text-sm text-muted"><strong class="text-ink">{currentPage}</strong> / {lastPage}</span>
+    {currentPage < lastPage ? <a href={next} class="button button-secondary">下一页 →</a> : <span class="button border border-line text-muted opacity-40">下一页 →</span>}
+  </nav>
+)}

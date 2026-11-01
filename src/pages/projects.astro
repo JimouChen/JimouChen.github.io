@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHeader from '../components/common/PageHeader.astro';
+import ProjectCard from '../components/projects/ProjectCard.astro';
+import { projects } from '../data/projects';
+import { site } from '../data/site';
+---
+
+<BaseLayout title="项目" description="Neaya 的开源项目：后端系统、桌面工具、浏览器扩展与 Python 实践。">
+  <div class="container-site py-16 sm:py-20">
+    <PageHeader eyebrow="Made with care" title="把想法做成可用的作品。" description="从后端服务到桌面与浏览器工具，记录设计、实现和持续打磨的过程。" />
+    <div class="mt-14 grid auto-rows-auto gap-5 sm:grid-cols-2">
+      {projects.map((project, index) => <ProjectCard project={project} large={index === 0} />)}
+    </div>
+    <div class="mt-12 flex justify-center">
+      <a href={site.github} target="_blank" rel="noreferrer" class="button button-secondary">在 GitHub 查看全部项目 <span>↗</span></a>
+    </div>
+  </div>
+</BaseLayout>
