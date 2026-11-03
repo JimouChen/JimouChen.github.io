@@ -5,7 +5,7 @@ export const site = {
   url: 'https://jimouchen.github.io',
   author: 'Neaya',
   github: 'https://github.com/JimouChen',
-  email: '1625645320@qq.com',
+  email: 'neaya102@gmail.com',
 } as const;
 
 export const navigation = [

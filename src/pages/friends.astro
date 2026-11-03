@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHeader from '../components/common/PageHeader.astro';
 import { friends } from '../data/friends';
+import { site } from '../data/site';
 ---
 
 <BaseLayout title="友链" description="Neaya 推荐的优秀开发者与技术博客。">
@@ -20,7 +21,7 @@ import { friends } from '../data/friends';
     <div class="card mx-auto mt-12 max-w-3xl p-7 text-center">
       <h2 class="text-base font-semibold">交换友链</h2>
       <p class="mt-2 text-sm leading-7 text-muted">如果你也在认真写作或构建作品，欢迎通过邮箱介绍你的网站。</p>
-      <a href="mailto:1625645320@qq.com?subject=Neaya%20Blog%20%E5%8F%8B%E9%93%BE%E7%94%B3%E8%AF%B7" class="mt-5 inline-flex text-sm font-medium text-accent hover:underline">联系我 →</a>
+      <a href={`mailto:${site.email}?subject=Neaya%20Blog%20%E5%8F%8B%E9%93%BE%E7%94%B3%E8%AF%B7`} class="mt-5 inline-flex text-sm font-medium text-accent hover:underline">联系我 →</a>
     </div>
   </div>
 </BaseLayout>
