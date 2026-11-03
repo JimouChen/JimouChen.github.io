@@ -313,12 +313,18 @@ img {
   font-family: var(--font-mono);
 }
 .dark .prose-neaya pre { background: #171c24 !important; }
+.prose-neaya .astro-code,
+.prose-neaya .astro-code span {
+  color: var(--shiki-light, inherit) !important;
+  font-style: var(--shiki-light-font-style, inherit) !important;
+  font-weight: var(--shiki-light-font-weight, inherit) !important;
+}
 .dark .prose-neaya .astro-code,
 .dark .prose-neaya .astro-code span {
-  color: var(--shiki-dark) !important;
-  background-color: var(--shiki-dark-bg) !important;
-  font-style: var(--shiki-dark-font-style) !important;
-  font-weight: var(--shiki-dark-font-weight) !important;
+  color: var(--shiki-dark, inherit) !important;
+  background-color: var(--shiki-dark-bg, transparent) !important;
+  font-style: var(--shiki-dark-font-style, inherit) !important;
+  font-weight: var(--shiki-dark-font-weight, inherit) !important;
 }
 .prose-neaya table {
   display: block;
