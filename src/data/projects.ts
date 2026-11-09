@@ -11,6 +11,15 @@ export interface Project {
 
 export const projects: Project[] = [
   {
+    name: 'fk-sign-nte',
+    description: '异环·塔吉多单账号自动签到工具，支持社区与角色签到、奖励查询、Token 安全轮换及 GitHub Actions 定时执行。',
+    stack: ['Go', 'GitHub Actions', 'Automation', 'NaCl'],
+    github: 'https://github.com/JimouChen/fk-sign-nte',
+    status: 'Open Source',
+    cover: '/images/projects/fk-sign-nte.jpg',
+    featured: true,
+  },
+  {
     name: 'shortlink-system',
     description: '基于 Go Kitex 微服务、Redis 与 Vue 3 的前后端分离短链接系统。',
     stack: ['Go', 'Kitex', 'Redis', 'Vue 3'],
