@@ -1,7 +1,7 @@
 ---
 title: "Lesson 1 PyTorch-Tensor（张量）"
 description: "大模型学习基础笔记：理解 Tensor 的创建、形状与基本运算，建立排查模型问题的第一直觉。"
-pubDate: 2026-11-23
+pubDate: 2026-11-23T23:16:00
 category: "LLM"
 tags: ["PyTorch", "Tensor", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"

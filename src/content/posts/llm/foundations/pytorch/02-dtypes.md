@@ -1,7 +1,7 @@
 ---
 title: "Lesson 2 PyTorch-Dtypes（数据类型）"
 description: "浮点、整型与 bool 的精度和范围速查，弄清 float32、bfloat16、int64 在大模型场景中的分工。"
-pubDate: 2026-11-23
+pubDate: 2026-11-23T23:31:00
 category: "LLM"
 tags: ["PyTorch", "dtype", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"

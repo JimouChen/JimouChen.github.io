@@ -1,7 +1,7 @@
 ---
 title: "Lesson 3 PyTorch-Autograd（自动求导）"
 description: "理解 requires_grad、backward 与梯度下降：自动求导如何记账，以及它为什么是训练大模型的核心。"
-pubDate: 2026-11-24
+pubDate: 2026-11-24T21:00:00
 updatedDate: 2026-11-24
 category: "LLM"
 tags: ["PyTorch", "Autograd", "学习笔记"]

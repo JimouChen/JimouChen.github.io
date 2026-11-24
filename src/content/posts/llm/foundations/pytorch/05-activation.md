@@ -1,7 +1,7 @@
 ---
 title: "Lesson 5 PyTorch-Activation（激活函数与多层网络）"
 description: "为什么必须有非线性：没有 ReLU 的多层网络会坍缩成一层，加了 ReLU 深度才有意义。"
-pubDate: 2026-11-24
+pubDate: 2026-11-24T23:12:00
 category: "LLM"
 tags: ["PyTorch", "Activation", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"

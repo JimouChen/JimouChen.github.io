@@ -1,7 +1,7 @@
 ---
 title: "Lesson 4 PyTorch-Nn-Module（搭建真正的神经网络）"
 description: "用 nn.Module 管参数、nn.Linear 管运算、optimizer 管更新：把上一课手写的训练循环升级成工业级组件。"
-pubDate: 2026-11-24
+pubDate: 2026-11-24T21:37:00
 category: "LLM"
 tags: ["PyTorch", "nn.Module", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"
