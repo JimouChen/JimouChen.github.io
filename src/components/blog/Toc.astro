@@ -11,15 +11,70 @@ const items = headings.filter((heading) => heading.depth === 2 || heading.depth 
 ---
 
 {items.length > 0 && (mobile ? (
-  <details class="card mb-8 p-5 xl:hidden">
-    <summary class="cursor-pointer text-sm font-semibold">本文目录</summary>
-    <nav class="mt-4 border-l border-line pl-4" aria-label="移动端文章目录">
-      {items.map((heading) => <a href={`#${heading.slug}`} class:list={['block py-1.5 text-sm leading-6 text-muted transition-colors hover:text-accent', heading.depth === 3 && 'pl-4 text-xs']}>{heading.text}</a>)}
+  <details class="toc card group mb-8 p-5 lg:hidden">
+    <summary class="flex cursor-pointer list-none items-center justify-between text-sm font-semibold [&::-webkit-details-marker]:hidden">
+      <span class="inline-flex items-center gap-2">
+        <svg class="size-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+          <path d="M8 6h13M8 12h13M8 18h13" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" />
+        </svg>
+        本文目录
+      </span>
+      <svg class="size-4 text-muted transition-transform duration-200 group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="m6 9 6 6 6-6" />
+      </svg>
+    </summary>
+    <nav class="mt-4 border-l border-line pl-3" aria-label="移动端文章目录">
+      {items.map((heading) => (
+        <a
+          href={`#${heading.slug}`}
+          data-toc-link={heading.slug}
+          class:list={[
+            'block rounded-lg px-2.5 py-1.5 text-sm leading-6 text-muted transition-colors hover:bg-surface-soft hover:text-ink',
+            heading.depth === 3 && 'pl-5 text-xs',
+          ]}
+        >{heading.text}</a>
+      ))}
     </nav>
   </details>
 ) : (
-  <nav class="toc sticky top-28 hidden max-h-[calc(100vh-8rem)] overflow-y-auto border-l border-line pl-5 xl:block" aria-label="文章目录">
-    <p class="mb-4 text-xs font-semibold uppercase tracking-[0.16em] text-ink">On this page</p>
-    {items.map((heading) => <a href={`#${heading.slug}`} data-toc-link={heading.slug} class:list={['block py-1.5 text-[13px] leading-6 text-muted transition-colors hover:text-accent', heading.depth === 3 && 'pl-4 text-xs']}>{heading.text}</a>)}
+  <nav class="toc sticky top-28 hidden max-h-[calc(100vh-8rem)] flex-col lg:flex" aria-label="文章目录" data-toc>
+    <div class="flex items-baseline justify-between px-0.5">
+      <p class="text-xs font-semibold uppercase tracking-[0.16em] text-ink">On this page</p>
+      <span class="text-[11px] tabular-nums text-muted" data-toc-progress>0%</span>
+    </div>
+    <div class="mt-3 h-[3px] overflow-hidden rounded-full bg-line" aria-hidden="true">
+      <div class="h-full w-0 rounded-full bg-accent transition-[width] duration-150 ease-out" data-toc-bar></div>
+    </div>
+    <div class="relative mt-4 min-h-0 flex-1 overflow-y-auto" data-toc-scroll>
+      <span
+        aria-hidden="true"
+        class="absolute left-0 top-0 w-[2px] rounded-full bg-accent opacity-0 transition-[transform,height,opacity] duration-200 ease-out"
+        data-toc-indicator
+      ></span>
+      <ul class="space-y-0.5 border-l border-line">
+        {items.map((heading) => (
+          <li>
+            <a
+              href={`#${heading.slug}`}
+              data-toc-link={heading.slug}
+              class:list={[
+                'block rounded-lg py-1.5 pr-2 text-[13px] leading-6 text-muted transition-colors hover:bg-surface-soft hover:text-ink',
+                heading.depth === 3 ? 'ml-4 pl-2.5 text-xs' : 'ml-2 pl-2.5',
+              ]}
+            >{heading.text}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    <button
+      type="button"
+      data-toc-top
+      class="pointer-events-none mt-4 inline-flex translate-y-1 items-center gap-1.5 self-start rounded-full border border-line bg-surface px-3.5 py-2 text-xs font-medium text-muted opacity-0 transition-all duration-200 hover:border-accent/40 hover:text-accent"
+    >
+      <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 19V5" /><path d="m5 12 7-7 7 7" />
+      </svg>
+      回到顶部
+    </button>
   </nav>
 ))}

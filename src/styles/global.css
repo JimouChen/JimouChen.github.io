@@ -61,7 +61,8 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  overflow-x: hidden;
+  /* clip 而非 hidden：hidden 会使 body 成为滚动容器，导致 sticky 定位失效 */
+  overflow-x: clip;
   background:
     radial-gradient(circle at 8% 2%, color-mix(in srgb, var(--pink) 10%, transparent), transparent 24rem),
     radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--sky) 12%, transparent), transparent 28rem),
@@ -249,7 +250,8 @@ img {
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.35;
-  scroll-margin-top: 7rem;
+  /* html 已有 scroll-padding-top: 6rem，此处仅留少量呼吸空间，避免锚点跳转双重偏移 */
+  scroll-margin-top: 0.5rem;
 }
 .prose-neaya h2 { margin: 2.6em 0 0.85em; font-size: 1.75rem; }
 .prose-neaya h3 { margin: 2em 0 0.7em; font-size: 1.3rem; }
@@ -337,7 +339,11 @@ img {
 .prose-neaya th,
 .prose-neaya td { border-bottom: 1px solid var(--line); padding: 0.75rem 1rem; text-align: left; }
 .prose-neaya th { color: var(--ink); font-weight: 650; }
-.toc a[aria-current="location"] { color: var(--accent); font-weight: 600; }
+.toc a[aria-current="location"] {
+  color: var(--accent);
+  font-weight: 600;
+  background: var(--accent-soft);
+}
 
 @media (max-width: 640px) {
   .prose-neaya { font-size: 1rem; line-height: 1.85; }

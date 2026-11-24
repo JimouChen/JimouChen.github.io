@@ -60,7 +60,7 @@ const structuredData = {
       )}
     </header>
 
-    <div class="container-site mt-12 grid gap-12 xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
+    <div class="container-site mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_220px] xl:grid-cols-[minmax(0,760px)_220px] xl:justify-center">
       <div class="min-w-0">
         <Toc headings={headings} mobile />
         <div class="prose-neaya">
@@ -92,14 +92,88 @@ const structuredData = {
 </BaseLayout>
 
 <script>
-  const tocLinks = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
-  if ('IntersectionObserver' in window && tocLinks.length > 0) {
-    const observer = new IntersectionObserver((entries) => {
-      const visible = entries.find((entry) => entry.isIntersecting);
-      if (!visible) return;
-      tocLinks.forEach((link) => link.removeAttribute('aria-current'));
-      document.querySelector(`[data-toc-link="${visible.target.id}"]`)?.setAttribute('aria-current', 'location');
-    }, { rootMargin: '-15% 0px -70% 0px' });
-    document.querySelectorAll('.prose-neaya h2[id], .prose-neaya h3[id]').forEach((heading) => observer.observe(heading));
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]')];
+  const headings = [...document.querySelectorAll<HTMLElement>('.prose-neaya h2[id], .prose-neaya h3[id]')];
+  const prose = document.querySelector<HTMLElement>('.prose-neaya');
+  const toc = document.querySelector<HTMLElement>('[data-toc]');
+  const scrollBox = toc?.querySelector<HTMLElement>('[data-toc-scroll]') ?? null;
+  const indicator = toc?.querySelector<HTMLElement>('[data-toc-indicator]') ?? null;
+  const bar = toc?.querySelector<HTMLElement>('[data-toc-bar]') ?? null;
+  const progressLabel = toc?.querySelector<HTMLElement>('[data-toc-progress]') ?? null;
+  const topButton = toc?.querySelector<HTMLButtonElement>('[data-toc-top]') ?? null;
+
+  if (links.length > 0 && headings.length > 0 && prose) {
+    const ACTIVATE_OFFSET = 128;
+    let activeId = '';
+
+    const setActive = (id: string) => {
+      if (id === activeId) return;
+      activeId = id;
+      for (const link of links) {
+        if (link.dataset.tocLink === id) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+      const activeLink = toc?.querySelector<HTMLAnchorElement>(`[data-toc-link="${id}"]`);
+      if (indicator && activeLink) {
+        indicator.style.height = `${activeLink.offsetHeight}px`;
+        indicator.style.transform = `translateY(${activeLink.offsetTop}px)`;
+        indicator.style.opacity = '1';
+      }
+      if (scrollBox && activeLink) {
+        const top = activeLink.offsetTop;
+        const bottom = top + activeLink.offsetHeight;
+        if (top < scrollBox.scrollTop + 8) scrollBox.scrollTop = top - 8;
+        else if (bottom > scrollBox.scrollTop + scrollBox.clientHeight - 8) scrollBox.scrollTop = bottom - scrollBox.clientHeight + 8;
+      }
+    };
+
+    const update = () => {
+      let current = headings[0]!;
+      for (const heading of headings) {
+        if (heading.getBoundingClientRect().top <= ACTIVATE_OFFSET) current = heading;
+        else break;
+      }
+      if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+        current = headings[headings.length - 1]!;
+      }
+      setActive(current.id);
+
+      const rect = prose.getBoundingClientRect();
+      const total = rect.height - window.innerHeight;
+      const ratio = total > 0 ? Math.min(Math.max(-rect.top / total, 0), 1) : 1;
+      if (bar) bar.style.width = `${(ratio * 100).toFixed(1)}%`;
+      if (progressLabel) progressLabel.textContent = `${Math.round(ratio * 100)}%`;
+      if (topButton) {
+        const show = window.scrollY > 480;
+        topButton.classList.toggle('opacity-0', !show);
+        topButton.classList.toggle('pointer-events-none', !show);
+        topButton.classList.toggle('translate-y-1', !show);
+      }
+    };
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        update();
+        ticking = false;
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll, { passive: true });
+
+    for (const link of links) {
+      link.addEventListener('click', () => {
+        setActive(link.dataset.tocLink ?? '');
+        link.closest('details')?.removeAttribute('open');
+      });
+    }
+    topButton?.addEventListener('click', () => {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
+    });
+
+    update();
   }
 </script>
