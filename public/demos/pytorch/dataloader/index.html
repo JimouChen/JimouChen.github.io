@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataLoader 分批训练 · 逐帧演示</title>
+<style>
+  :root {
+    --fg: #1f2328; --muted: #656d76; --border: #d0d7de;
+    --accent: #f0a04b; --bg: #ffffff; --panel: #f6f8fa;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    color: var(--fg); background: var(--bg); line-height: 1.6;
+  }
+  main { max-width: 1180px; margin: 0 auto; padding: 24px 20px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin: 0 0 20px; }
+  .viewer {
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    background: #fff; box-shadow: 0 1px 3px rgba(31,35,40,.06);
+  }
+  .stage { position: relative; cursor: pointer; user-select: none; background: #fff; }
+  .stage img { display: block; width: 100%; height: auto; }
+  .stage .hint {
+    position: absolute; right: 12px; bottom: 10px; font-size: 12px; color: var(--muted);
+    background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--border); pointer-events: none;
+  }
+  .bar {
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 12px 16px; border-top: 1px solid var(--border); background: var(--panel);
+  }
+  .bar button {
+    font: inherit; font-size: 14px; padding: 6px 14px; border-radius: 6px;
+    border: 1px solid var(--border); background: #fff; cursor: pointer;
+  }
+  .bar button:hover { border-color: #b6bec7; }
+  .bar button.primary { background: #1f2328; color: #fff; border-color: #1f2328; }
+  .bar button:disabled { opacity: .45; cursor: default; }
+  .counter { font-variant-numeric: tabular-nums; font-size: 14px; color: var(--muted); min-width: 72px; }
+  input[type=range] { flex: 1 1 160px; accent-color: #1f2328; }
+  .nav {
+    display: flex; gap: 6px; flex-wrap: wrap; padding: 10px 16px;
+    border-top: 1px solid var(--border); background: #fff;
+  }
+  .nav button { font: inherit; font-size: 12px; padding: 3px 10px; border-radius: 999px;
+    border: 1px solid var(--border); background: #fff; cursor: pointer; color: var(--muted); }
+  .nav button.active { background: #fff1d6; border-color: var(--accent); color: #b35c00; font-weight: 600; }
+  .explain {
+    margin-top: 16px; padding: 14px 18px; border-left: 4px solid var(--accent);
+    background: var(--panel); border-radius: 0 8px 8px 0; min-height: 72px;
+  }
+  .explain .tag { display: inline-block; font-size: 12px; color: #b35c00; font-weight: 600; margin-bottom: 4px; }
+  .explain p { margin: 0; font-size: 15px; }
+  .explain code { background: #eaeef2; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  .legend { margin-top: 18px; font-size: 13px; color: var(--muted); }
+  .legend h2 { font-size: 14px; color: var(--fg); margin: 0 0 6px; }
+  .legend ul { margin: 0; padding-left: 18px; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e6edf3; --muted: #8d96a0; --border: #30363d; --bg: #0d1117; --panel: #161b22; }
+    .bar button.primary { background: #e6edf3; color: #0d1117; border-color: #e6edf3; }
+    .stage, .viewer, .nav { background: var(--bg); }
+    .explain code { background: #21262d; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>DataLoader 分批训练 · 逐帧演示</h1>
+  <p class="sub">点击画面或按 <kbd>→</kbd> 下一帧，<kbd>←</kbd> 上一帧，空格键自动播放/暂停。</p>
+
+  <div class="viewer">
+    <div class="stage" id="stage" title="点击：下一帧">
+      <img id="frame" src="06-dataloader-frames/frame_001.png" alt="训练过程帧">
+      <span class="hint">点击 → 下一帧</span>
+    </div>
+
+    <div class="bar">
+      <button id="prev">← 上一帧</button>
+      <button id="next" class="primary">下一帧 →</button>
+      <button id="play">▶ 自动播放</button>
+      <span class="counter" id="counter">1 / 56</span>
+      <input type="range" id="slider" min="1" max="56" value="1">
+    </div>
+
+    <div class="nav" id="nav"></div>
+  </div>
+
+  <div class="explain" id="explain"></div>
+
+  <div class="legend">
+    <h2>画面怎么看</h2>
+    <ul>
+      <li><b>左边</b>：蓝线是 sin 真实曲线，红线是网络当前输出，橙色大点是当前 batch 的样本，橙色竖线是这些样本的误差。</li>
+      <li><b>中间</b>：100 个样本编号，颜色代表被分进了哪个 batch；黑框是正在处理的 batch。</li>
+      <li><b>右边</b>：每个 batch 内的 5 步，橙色高亮是当前走到哪一步；下方实时显示 loss、梯度、total_loss。</li>
+    </ul>
+  </div>
+</main>
+
+<script>
+(function () {
+  // 帧索引与生成脚本中的 frames 一一对应
+  const CHAPTERS = [
+    { label: "epoch 1 开始", frames: [1] },
+    { label: "batch 1", frames: [2, 3, 4, 5, 6] },
+    { label: "batch 2", frames: [7, 8, 9, 10, 11] },
+    { label: "batch 3", frames: [12, 13, 14, 15, 16] },
+    { label: "batch 4", frames: [17, 18, 19, 20, 21] },
+    { label: "batch 5", frames: [22, 23, 24, 25, 26] },
+    { label: "batch 6", frames: [27, 28, 29, 30, 31] },
+    { label: "batch 7", frames: [32, 33, 34, 35, 36] },
+    { label: "epoch 1 结束", frames: [37] },
+    { label: "epoch 2 快速预览", frames: [38, 39, 40, 41, 42, 43, 44] },
+    { label: "epoch 3 → 200", frames: [45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56] },
+  ];
+  const STEP_TEXT = {
+    1: ["① 前向传播", "把这一个 batch 的 16 个样本 <code>xb</code> 喂给模型，得到预测值 <code>y_pred</code>。此时参数还没动，红线就是模型当前的形状。"],
+    2: ["② 计算 loss", "用 <code>loss_fn(y_pred, yb)</code> 算这 16 个样本的均方误差。左边橙色竖线就是每个样本的误差，loss 是它们的平方平均。注意：这个 loss 只看当前 batch，不是全部 100 个样本。"],
+    3: ["③ 清零梯度", "梯度默认是<b>累加</b>的，不清零会和上一批的梯度混在一起。看右边「b3 的 grad」这一行：清零后变成 <code>None</code>。"],
+    4: ["④ 反向传播", "<code>loss.backward()</code> 从 loss 往回算出每个参数的梯度。「b3 的 grad」从 <code>None</code> 变成了一个具体数值。"],
+    5: ["⑤ 更新参数", "<code>optimizer.step()</code> 用刚算出的梯度更新所有参数，<b>红线在这一帧发生移动</b>。同时 <code>total_loss</code> 累加了 <code>loss × 16</code>，为算整个 epoch 的平均 loss 做准备。"],
+  };
+  const EPOCH_FRAME = {
+    45: 3, 46: 5, 47: 8, 48: 12, 49: 18, 50: 25, 51: 35, 52: 50, 53: 75, 54: 100, 55: 150, 56: 200,
+  };
+
+  const TOTAL = 56;
+  const img = document.getElementById("frame");
+  const counter = document.getElementById("counter");
+  const slider = document.getElementById("slider");
+  const prevBtn = document.getElementById("prev");
+  const nextBtn = document.getElementById("next");
+  const playBtn = document.getElementById("play");
+  const explain = document.getElementById("explain");
+  const nav = document.getElementById("nav");
+  let cur = 1;
+  let timer = null;
+
+  // 预加载全部帧，切换时不闪
+  const cache = [];
+  for (let i = 1; i <= TOTAL; i++) {
+    const im = new Image();
+    im.src = `06-dataloader-frames/frame_${String(i).padStart(3, "0")}.png`;
+    cache.push(im);
+  }
+
+  function chapterOf(f) {
+    for (const c of CHAPTERS) if (c.frames.includes(f)) return c;
+    return null;
+  }
+
+  function describe(f) {
+    const c = chapterOf(f);
+    if (!c) return "";
+    const idx = c.frames.indexOf(f);
+    if (f === 1) {
+      return `<span class="tag">epoch 1 / 200 · 开始</span>
+        <p>一个 epoch 开始，<code>shuffle=True</code> 先把 100 个样本的编号打乱，再按 <code>batch_size=16</code> 切成 7 个 batch（6 个 16 样本 + 1 个 4 样本）。中间的颜色就是这个 epoch 的分批结果，<code>total_loss</code> 归零。红线是随机初始化的网络，几乎是一条平线。</p>`;
+    }
+    if (f === 37) {
+      return `<span class="tag">epoch 1 / 200 · 结束</span>
+        <p>7 个 batch 全部处理完，每个样本都恰好用过一次，参数一共更新了 7 次。<code>total_loss</code> 是整个 epoch 的误差总和，除以样本数 100 得到 epoch 平均 loss。接下来进入 epoch 2，会<b>重新打乱</b>再分批。</p>`;
+    }
+    if (f >= 38 && f <= 44) {
+      return `<span class="tag">epoch 2 / 200 · batch ${idx + 1} / 7</span>
+        <p>快速预览：每个 batch 更新一次后给一帧。看中间的黑框逐批移动，左边的红线一段段弯出弧度。和 epoch 1 相比，样本编号的颜色分布<b>完全不同</b>——这就是每个 epoch 重新 shuffle 的效果。</p>`;
+    }
+    if (f >= 45) {
+      const e = EPOCH_FRAME[f];
+      const tail = e === 200
+        ? "训练结束，红线已经贴合 sin 曲线。" 
+        : "中间的颜色分布每个 epoch 都重新洗牌。";
+      return `<span class="tag">epoch ${e} / 200</span>
+        <p>每个关键 epoch 一帧。红线逐渐贴近蓝线；loss 不是一路下降的，有时会比上一帧略高——这是 mini-batch 梯度带噪声的正常现象。${tail}</p>`;
+    }
+    // epoch 1 的 5 步
+    const step = idx + 1;
+    const [title, text] = STEP_TEXT[step];
+    return `<span class="tag">epoch 1 / 200 · batch ${c.label.replace("batch ", "")} / 7 · 第 ${step} 步</span>
+      <p><b>${title}</b>　${text}</p>`;
+  }
+
+  function render() {
+    img.src = cache[cur - 1].src;
+    counter.textContent = `${cur} / ${TOTAL}`;
+    slider.value = cur;
+    prevBtn.disabled = cur === 1;
+    nextBtn.disabled = cur === TOTAL;
+    explain.innerHTML = describe(cur);
+    nav.querySelectorAll("button").forEach((b, i) => {
+      const c = CHAPTERS[i];
+      b.classList.toggle("active", c.frames.includes(cur));
+    });
+    const hash = `#f${cur}`;
+    if (location.hash !== hash) history.replaceState(null, "", hash);
+  }
+
+  function go(n) {
+    cur = Math.max(1, Math.min(TOTAL, n));
+    render();
+  }
+
+  CHAPTERS.forEach((c) => {
+    const b = document.createElement("button");
+    b.textContent = c.label;
+    b.addEventListener("click", () => go(c.frames[0]));
+    nav.appendChild(b);
+  });
+
+  document.getElementById("stage").addEventListener("click", () => go(cur + 1));
+  prevBtn.addEventListener("click", () => go(cur - 1));
+  nextBtn.addEventListener("click", () => go(cur + 1));
+  slider.addEventListener("input", () => go(Number(slider.value)));
+
+  function stop() {
+    if (timer) { clearInterval(timer); timer = null; }
+    playBtn.textContent = "▶ 自动播放";
+  }
+  function start() {
+    if (cur >= TOTAL) go(1);
+    timer = setInterval(() => {
+      if (cur >= TOTAL) { stop(); return; }
+      go(cur + 1);
+    }, 900);
+    playBtn.textContent = "⏸ 暂停";
+  }
+  playBtn.addEventListener("click", () => (timer ? stop() : start()));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight" || e.key === "PageDown") { e.preventDefault(); go(cur + 1); }
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(cur - 1); }
+    else if (e.key === "Home") { e.preventDefault(); go(1); }
+    else if (e.key === "End") { e.preventDefault(); go(TOTAL); }
+    else if (e.key === " ") { e.preventDefault(); (timer ? stop() : start()); }
+  });
+
+  const m = location.hash.match(/^#f(\d+)$/);
+  go(m ? Number(m[1]) : 1);
+})();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@
 title: "Lesson 6 PyTorch-DataLoader（Dataset 和 DataLoader）"
 description: "真实训练不是一次喂全部数据：讲清 batch 的意义、Dataset 与 DataLoader 的分工，以及 shuffle 为什么必须打开。"
 pubDate: 2026-11-25T22:51:00
+updatedDate: 2026-11-27
 category: "LLM"
 tags: ["PyTorch", "DataLoader", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"
@@ -215,6 +216,31 @@ for epoch in range(...):           for epoch in range(...):
                                                               ←┘
 一轮更新 1 次                       一轮更新 len(loader) = 7 次
 ```
+
+### 训练过程逐帧动图
+
+![DataLoader 分批训练的逐帧过程](/images/posts/llm/pytorch/06-dataloader-training.gif)
+
+> 想一步一步看？打开[交互版逐帧演示](/demos/pytorch/dataloader/)：点击画面或按 `→` 进入下一帧，每帧配有当前步骤的说明。
+
+画面分三块，对应上面的双层循环：
+
+| 位置 | 看什么 |
+|---|---|
+| 左边 | 蓝线是 sin 真实曲线，红线是网络当前输出，橙色大点是**当前 batch 的样本**，橙色竖线是这些样本的误差 |
+| 中间 | 100 个样本编号，颜色代表被分进了哪个 batch；黑框是正在处理的 batch |
+| 右边 | 每个 batch 内的 5 步，橙色高亮是当前走到哪一步；下方实时显示 loss、梯度、total_loss |
+
+播放节奏分三段：
+
+1. **epoch 1（慢速）**：开头先展示打乱后切成的 7 个 batch，然后每个 batch 的 ①~⑤ 各停一帧。看右侧的 grad 那一行：①② 时它还是**上一批的旧梯度**，③ 清零，④ 算出新值，⑤ 红线移动。
+2. **epoch 2（中速）**：每个 batch 更新一次后给一帧，能看到中间的黑框逐批移动，红线一段段弯出弧度。
+3. **epoch 3 → 200（快速）**：每个关键 epoch 一帧，中间的颜色分布每个 epoch 都重新洗牌（`shuffle=True`），红线逐渐贴合蓝线。
+
+两点说明：
+
+- 动图用 numpy 复现了同样的结构（1→32→32→1 + ReLU + Adam，`lr=0.01`，`batch_size=16`），数值和上面的示意结果不完全一致。
+- 各 epoch 的 loss 不是一路下降的，比如中途会比前一个关键帧略高——这是 mini-batch 的正常现象：每个 batch 的梯度只是 16 个样本的局部估计，带噪声。（动图里展示的是每个 epoch 内各 batch loss 的累加平均值。）
 
 ## 5. shuffle 的作用：为什么必须打乱？
 
