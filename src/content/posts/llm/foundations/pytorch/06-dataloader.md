@@ -2,7 +2,7 @@
 title: "Lesson 6 PyTorch-DataLoader（Dataset 和 DataLoader）"
 description: "真实训练不是一次喂全部数据：讲清 batch 的意义、Dataset 与 DataLoader 的分工，以及 shuffle 为什么必须打开。"
 pubDate: 2026-11-25T22:51:00
-updatedDate: 2026-11-27
+updatedDate: 2026-11-28
 category: "LLM"
 tags: ["PyTorch", "DataLoader", "学习笔记"]
 cover: "/images/posts/llm-foundations.jpg"
@@ -216,6 +216,23 @@ for epoch in range(...):           for epoch in range(...):
                                                               ←┘
 一轮更新 1 次                       一轮更新 len(loader) = 7 次
 ```
+
+**整个流程下来，参数一共更新了几次？**——**1400 次**：200 个 epoch × 每个 epoch 7 个 batch。
+
+```text
+for epoch in range(200):          ← 外层跑 200 遍
+    for xb, yb in loader:         ← 内层每个 epoch 跑 7 遍（100 ÷ 16，向上取整）
+        optimizer.step()          ← 每个内层循环执行 1 次
+```
+
+对比第 5 课全量喂的写法：同样 200 个 epoch，那边只在每个 epoch 结尾更新 1 次，总共 **200 次**。分批之后更新次数变成 7 倍，这也是 mini-batch 收敛更快的原因之一。
+
+对应到下面的动图：epoch 1 慢放那一段，每个 batch 的第 ⑤ 步红线移动一次，7 个 batch 就是 7 次更新；之后每个 epoch 都是 7 次，直到 200 个 epoch 结束。
+
+另外两个相关的数字：
+
+- **样本被使用的次数**：每个样本每个 epoch 恰好用 1 次，所以每个样本一共被看了 200 次。
+- **每次更新看的样本数**：每次 `step()` 只用 16 个样本算梯度（最后一个 batch 是 4 个），而不是全部 100 个。
 
 ### 训练过程逐帧动图
 
